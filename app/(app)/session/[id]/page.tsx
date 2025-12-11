@@ -184,7 +184,7 @@ export default function PlayerSessionPage() {
                 </button>
               )}
             </div>
-            <TeamCard team={userTeam} isYourTeam showEdit={isCaptain} onEdit={() => setEditTeamNameModal(true)} />
+            <TeamCard team={userTeam} isYourTeam />
           </div>
         )}
         

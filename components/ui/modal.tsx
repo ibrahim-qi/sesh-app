@@ -37,8 +37,9 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
       {/* Modal */}
       <div 
         className={cn(
-          'relative w-full sm:max-w-md bg-[#1a1f2e] border border-[#2a3142] rounded-t-3xl sm:rounded-2xl p-6 max-h-[90vh] overflow-y-auto',
+          'relative w-full sm:max-w-md bg-[#1a1f2e] border border-[#2a3142] rounded-t-3xl sm:rounded-2xl p-6 pb-8 max-h-[85vh] overflow-y-auto',
           'animate-in slide-in-from-bottom duration-300 sm:zoom-in-95',
+          'mb-[calc(60px+env(safe-area-inset-bottom))] sm:mb-0',
           className
         )}
       >

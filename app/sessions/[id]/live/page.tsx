@@ -188,7 +188,7 @@ export default function LiveScoringPage() {
       completed_at: new Date().toISOString(),
     } as any).eq('id', currentGame.id)
     
-    if (streak?.teamId === winner.id) {
+    if (streak && streak.teamId === winner.id) {
       setStreak({ teamId: winner.id, count: streak.count + 1 })
     } else {
       setStreak({ teamId: winner.id, count: 1 })

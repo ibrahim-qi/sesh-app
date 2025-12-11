@@ -1,12 +1,15 @@
 'use client'
 
-import { GroupMember } from '@/lib/types'
 import { Avatar } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils'
 
 interface LeaderboardItemProps {
   rank: number
-  member: GroupMember
+  member: {
+    id: string
+    name: string
+    avatar_url?: string | null
+  }
   value: string | number
   label: string
   isCurrentUser?: boolean

@@ -48,14 +48,21 @@ export default function ProfilePage() {
       const fileExt = avatarFile.name.split('.').pop()
       const fileName = `${member.group_id}/${member.id}_${Date.now()}.${fileExt}`
       
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError, data: uploadData } = await supabase.storage
         .from('avatars')
         .upload(fileName, avatarFile, {
           cacheControl: '3600',
           upsert: true,
         })
       
-      if (!uploadError) {
+      if (uploadError) {
+        console.error('Avatar upload error:', uploadError)
+        alert(`Failed to upload avatar: ${uploadError.message}`)
+        setLoading(false)
+        return
+      }
+      
+      if (uploadData) {
         const { data: urlData } = supabase.storage
           .from('avatars')
           .getPublicUrl(fileName)
@@ -64,7 +71,7 @@ export default function ProfilePage() {
     }
     
     // Update member
-    const { data: updated } = await supabase
+    const { data: updated, error: updateError } = await supabase
       .from('group_members')
       .update({
         name: editName.trim(),
@@ -74,10 +81,18 @@ export default function ProfilePage() {
       .select()
       .single()
     
+    if (updateError) {
+      console.error('Profile update error:', updateError)
+      alert(`Failed to update profile: ${updateError.message}`)
+      setLoading(false)
+      return
+    }
+    
     if (updated) {
       const newMember = { ...updated, group_id: member.group_id }
       localStorage.setItem('hoops_member', JSON.stringify(newMember))
       setMember(newMember)
+      setAvatarPreview(finalAvatarUrl)
       setAvatarFile(null)
     }
     

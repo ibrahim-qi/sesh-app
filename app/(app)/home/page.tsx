@@ -136,7 +136,7 @@ export default function HomePage() {
                 {group?.name || 'Sesh'}
               </h1>
               <p className="text-sm text-[#6b7280]">
-                Hey, {member?.name?.split(' ')[0]} 👋
+                Hey, {member?.name?.split(' ')[0]}
               </p>
             </div>
             {isAdmin && (
@@ -186,7 +186,17 @@ export default function HomePage() {
           <Card gradient>
             <div className="flex items-center justify-between mb-4">
               <CardTitle>
-                {upcomingSession.status === 'live' ? '🔴 Live Now' : '📅 Next Up'}
+                {upcomingSession.status === 'live' ? (
+                  <span className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                    Live Now
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-blue-400 rounded-full" />
+                    Next Up
+                  </span>
+                )}
               </CardTitle>
               {canManageSession && upcomingSession.status === 'upcoming' && (
                 <Link href={`/sessions/${upcomingSession.id}/live`}>
@@ -215,7 +225,7 @@ export default function HomePage() {
             {/* Session Host */}
             {sessionHost && (
               <div className="flex items-center gap-2 mb-4 p-2.5 bg-blue-500/10 border border-blue-500/20 rounded-xl">
-                <span className="text-sm">🎫</span>
+                <span className="w-5 h-5 bg-blue-500/30 rounded flex items-center justify-center text-[10px] font-bold text-blue-400">H</span>
                 <Avatar src={sessionHost.avatar_url} name={sessionHost.name} size="xs" />
                 <span className="text-sm text-blue-400">
                   Hosted by <span className="font-medium">{sessionHost.name}</span>

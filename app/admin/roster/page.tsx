@@ -95,11 +95,11 @@ export default function RosterPage() {
   const getRoleBadge = (role: string) => {
     switch (role) {
       case 'admin':
-        return <span className="text-xs bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full font-medium">👑 Admin</span>
+        return <span className="text-xs bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full font-medium flex items-center gap-1 w-fit"><span className="w-3 h-3 bg-purple-500/40 rounded flex items-center justify-center text-[7px] font-bold">★</span>Admin</span>
       case 'host':
-        return <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full font-medium">🎫 Host</span>
+        return <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full font-medium flex items-center gap-1 w-fit"><span className="w-3 h-3 bg-blue-500/40 rounded flex items-center justify-center text-[7px] font-bold">H</span>Host</span>
       case 'captain':
-        return <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded-full font-medium">⚡ Captain</span>
+        return <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded-full font-medium flex items-center gap-1 w-fit"><span className="w-3 h-3 bg-yellow-500/40 rounded flex items-center justify-center text-[7px] font-bold">C</span>Captain</span>
       default:
         return <span className="text-xs bg-[#252c3d] text-[#6b7280] px-2 py-0.5 rounded-full font-medium">Player</span>
     }
@@ -130,7 +130,7 @@ export default function RosterPage() {
         {members.filter(m => m.role === 'host').length > 0 && (
           <Card>
             <h3 className="text-sm font-semibold text-[#6b7280] uppercase tracking-wide mb-3">
-              🎫 Hosts ({members.filter(m => m.role === 'host').length})
+              <span className="flex items-center gap-1"><span className="w-4 h-4 bg-blue-500/30 rounded flex items-center justify-center text-[8px] font-bold text-blue-400">H</span>Hosts ({members.filter(m => m.role === 'host').length})</span>
             </h3>
             <p className="text-xs text-[#6b7280] mb-3">Can create and manage sessions</p>
             <div className="space-y-2">
@@ -234,7 +234,7 @@ export default function RosterPage() {
             }`}
           >
             <div className="flex items-center gap-3">
-              <span className="text-2xl">🎫</span>
+              <span className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center text-lg font-bold text-blue-400">H</span>
               <div>
                 <p className="font-semibold text-white">Host</p>
                 <p className="text-sm text-[#6b7280]">Can create & manage sessions</p>
@@ -249,7 +249,7 @@ export default function RosterPage() {
             }`}
           >
             <div className="flex items-center gap-3">
-              <span className="text-2xl">🏀</span>
+              <span className="w-10 h-10 bg-[#ff6b35]/20 rounded-xl flex items-center justify-center text-lg font-bold text-[#ff6b35]">P</span>
               <div>
                 <p className="font-semibold text-white">Player</p>
                 <p className="text-sm text-[#6b7280]">View only - see teams & stats</p>

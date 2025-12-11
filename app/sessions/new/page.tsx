@@ -231,7 +231,7 @@ export default function NewSessionPage() {
                 >
                   <Avatar src={m.avatar_url} name={m.name} size="md" />
                   <span className="flex-1 text-left font-medium text-white">{m.name}</span>
-                  {hostId === m.id && <span className="text-blue-400">🎫 Host</span>}
+                  {hostId === m.id && <span className="flex items-center gap-1 text-blue-400"><span className="w-4 h-4 bg-blue-500/30 rounded flex items-center justify-center text-[8px] font-bold">H</span>Host</span>}
                 </button>
               ))}
             </div>
@@ -259,7 +259,7 @@ export default function NewSessionPage() {
                 >
                   <Avatar src={m.avatar_url} name={m.name} size="md" />
                   <span className="flex-1 text-left font-medium text-white">{m.name}</span>
-                  {m.id === hostId && <span className="text-xs text-blue-400">🎫</span>}
+                  {m.id === hostId && <span className="w-4 h-4 bg-blue-500/30 rounded flex items-center justify-center text-[8px] font-bold text-blue-400">H</span>}
                   {selectedPlayers.includes(m.id) && <Check size={20} className="text-[#ff6b35]" />}
                 </button>
               ))}
@@ -315,7 +315,7 @@ export default function NewSessionPage() {
                       <div key={playerId} className="flex items-center gap-2 bg-[#252c3d] rounded-xl p-2">
                         <Avatar src={m?.avatar_url} name={m?.name || ''} size="sm" />
                         <span className="flex-1 text-sm font-medium text-white">{m?.name}</span>
-                        {playerId === hostId && <span className="text-xs text-blue-400">🎫</span>}
+                        {playerId === hostId && <span className="w-4 h-4 bg-blue-500/30 rounded flex items-center justify-center text-[8px] font-bold text-blue-400">H</span>}
                         <button
                           onClick={() => toggleCaptain(team.id, playerId)}
                           className={`p-1.5 rounded-lg transition-colors ${
@@ -324,7 +324,7 @@ export default function NewSessionPage() {
                               : 'text-[#6b7280] hover:text-yellow-400 hover:bg-yellow-500/10'
                           }`}
                         >
-                          👑
+                          <span className="w-4 h-4 bg-yellow-500/30 rounded flex items-center justify-center text-[8px] font-bold text-yellow-400">C</span>
                         </button>
                         <button
                           onClick={() => removeFromTeam(playerId)}

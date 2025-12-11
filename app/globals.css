@@ -333,8 +333,19 @@ button:active, a:active {
   animation: scorePop 0.3s ease-out;
 }
 
-/* Page transition */
-@keyframes fadeIn {
+/* Page transitions - premium feel */
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pageFade {
   from {
     opacity: 0;
   }
@@ -344,7 +355,20 @@ button:active, a:active {
 }
 
 .page-transition {
-  animation: fadeIn 0.2s ease-out;
+  animation: pageEnter 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Smooth view transitions for navigation */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root) {
+  animation: 150ms ease-out both pageFade;
+}
+
+::view-transition-new(root) {
+  animation: 200ms ease-in both pageEnter;
 }
 
 /* Score button styles - dark theme */
@@ -412,3 +436,58 @@ input[type="date"],
 input[type="time"] {
   font-size: 16px; /* Prevents iOS zoom */
 }
+
+/* Date/time input dark theme styling */
+input[type="date"],
+input[type="time"] {
+  color-scheme: dark;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.6);
+  opacity: 0.8;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover {
+  filter: invert(0.8);
+  background: rgba(255, 107, 53, 0.1);
+}
+
+/* Premium link transitions */
+a {
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Card hover lift effect */
+.card-lift {
+  transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.2s ease;
+}
+
+.card-lift:active {
+  transform: scale(0.98);
+}
+
+/* Smooth content loading */
+.content-enter {
+  animation: pageEnter 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Staggered children animation */
+.stagger-children > * {
+  opacity: 0;
+  animation: pageEnter 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.3s; }

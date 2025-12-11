@@ -1,13 +1,20 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Avatar } from '@/components/ui/avatar'
-import { ArrowLeft, Undo2, Trophy } from 'lucide-react'
+import { ArrowLeft, Undo2, Trophy, Play, Pause, RotateCcw, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { getTeamColorHex } from '@/lib/types'
 import { supabase } from '@/lib/supabase/client'
+
+const GAME_DURATIONS = [
+  { label: '10 sec', seconds: 10 },  // For testing - remove in production
+  { label: '3 min', seconds: 180 },
+  { label: '4 min', seconds: 240 },
+  { label: '5 min', seconds: 300 },
+]
 
 export default function LiveScoringPage() {
   const router = useRouter()
@@ -21,16 +28,99 @@ export default function LiveScoringPage() {
   const [scores, setScores] = useState<any[]>([])
   const [streak, setStreak] = useState<{ teamId: string; count: number } | null>(null)
   const [showGameEndModal, setShowGameEndModal] = useState(false)
+  const [showTieModal, setShowTieModal] = useState(false)
   const [winner, setWinner] = useState<any>(null)
   const [scoreAnimation, setScoreAnimation] = useState<string | null>(null)
   
-  const TARGET_SCORE = 5
+  // Timer state
+  const [gameMode, setGameMode] = useState<'timer' | 'target'>('timer')
+  const [gameDuration, setGameDuration] = useState(300) // 5 minutes default
+  const [timeLeft, setTimeLeft] = useState(300)
+  const [isTimerRunning, setIsTimerRunning] = useState(false)
+  const [showTimerSetup, setShowTimerSetup] = useState(true)
+  const [timerEnded, setTimerEnded] = useState(false)
+  const timerRef = useRef<NodeJS.Timeout | null>(null)
+  
+  const TARGET_SCORE = 11
   
   useEffect(() => {
     const memberData = JSON.parse(localStorage.getItem('hoops_member') || '{}')
     setMember(memberData)
     loadData()
   }, [sessionId])
+  
+  // Timer effect
+  useEffect(() => {
+    if (isTimerRunning && timeLeft > 0) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            setIsTimerRunning(false)
+            setTimerEnded(true) // Signal that timer ended
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+    }
+    
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
+  }, [isTimerRunning])
+  
+  // Handle timer end with fresh state
+  useEffect(() => {
+    if (timerEnded && currentGame) {
+      setTimerEnded(false)
+      
+      // Vibrate to alert
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200])
+      
+      const team1Score = currentGame.team1_score
+      const team2Score = currentGame.team2_score
+      
+      if (team1Score === team2Score) {
+        // It's a tie - show overtime modal
+        setShowTieModal(true)
+      } else {
+        // We have a winner
+        const winnerTeamId = team1Score > team2Score ? currentGame.team1_id : currentGame.team2_id
+        setWinner(teams.find(t => t.id === winnerTeamId))
+        setShowGameEndModal(true)
+      }
+    }
+  }, [timerEnded, currentGame, teams])
+  
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
+  
+  const startTimer = () => {
+    setShowTimerSetup(false)
+    setIsTimerRunning(true)
+  }
+  
+  const pauseTimer = () => {
+    setIsTimerRunning(false)
+  }
+  
+  const resumeTimer = () => {
+    setIsTimerRunning(true)
+  }
+  
+  const resetTimer = () => {
+    setIsTimerRunning(false)
+    setTimeLeft(gameDuration)
+  }
+  
+  const addOvertime = (extraSeconds: number) => {
+    setShowTieModal(false)
+    setTimeLeft(extraSeconds)
+    setIsTimerRunning(true)
+  }
   
   const canManage = () => {
     if (!member || !session) return false
@@ -128,6 +218,10 @@ export default function LiveScoringPage() {
     if (newGame) {
       setCurrentGame(newGame)
       setScores([])
+      // Reset timer for new game
+      setTimeLeft(gameDuration)
+      setIsTimerRunning(false)
+      setShowTimerSetup(true)
     }
   }
   
@@ -156,12 +250,13 @@ export default function LiveScoringPage() {
     setCurrentGame((prev: any) => ({ ...prev, team1_score: newTeam1Score, team2_score: newTeam2Score }))
     setScores(prev => [...prev, newScore])
     
-    if (newTeam1Score >= TARGET_SCORE || newTeam2Score >= TARGET_SCORE) {
+    // Only auto-end for target score mode
+    if (gameMode === 'target' && (newTeam1Score >= TARGET_SCORE || newTeam2Score >= TARGET_SCORE)) {
       const winnerTeamId = newTeam1Score >= TARGET_SCORE ? currentGame.team1_id : currentGame.team2_id
       setWinner(teams.find(t => t.id === winnerTeamId))
       setShowGameEndModal(true)
     }
-  }, [currentGame, teams])
+  }, [currentGame, teams, gameMode])
   
   const handleUndo = useCallback(async () => {
     if (!currentGame || scores.length === 0) return
@@ -181,6 +276,8 @@ export default function LiveScoringPage() {
   
   const handleEndGame = useCallback(async () => {
     if (!currentGame || !winner) return
+    
+    setIsTimerRunning(false)
     
     await supabase.from('games').update({
       status: 'completed',
@@ -205,6 +302,8 @@ export default function LiveScoringPage() {
   
   const handleEndSession = async () => {
     if (!confirm('End this session?')) return
+    
+    setIsTimerRunning(false)
     
     await supabase.from('sessions').update({ status: 'completed' } as any).eq('id', sessionId)
     
@@ -241,6 +340,7 @@ export default function LiveScoringPage() {
   const waitingTeam = teams.find(t => t.id !== currentGame.team1_id && t.id !== currentGame.team2_id)
   const team1Color = getTeamColorHex(team1?.color || 'red')
   const team2Color = getTeamColorHex(team2?.color || 'blue')
+  const isLowTime = timeLeft <= 30 && timeLeft > 0
   
   return (
     <div className="min-h-screen bg-[#0f1219] text-white pb-24 relative">
@@ -267,9 +367,50 @@ export default function LiveScoringPage() {
         </div>
       </div>
       
-      <div className="py-10 text-center relative z-10">
+      {/* Timer Display */}
+      {gameMode === 'timer' && !showTimerSetup && (
+        <div className="relative z-10 py-4">
+          <div className="flex flex-col items-center">
+            <div className={`text-5xl font-mono font-bold tracking-wider ${isLowTime ? 'text-red-500 animate-pulse' : 'text-white'}`}>
+              {formatTime(timeLeft)}
+            </div>
+            <div className="flex items-center gap-3 mt-3">
+              {isTimerRunning ? (
+                <button 
+                  onClick={pauseTimer}
+                  className="p-3 bg-[#252c3d] hover:bg-[#2d3548] rounded-full transition-colors"
+                >
+                  <Pause size={20} className="text-[#ff6b35]" />
+                </button>
+              ) : (
+                <button 
+                  onClick={resumeTimer}
+                  className="p-3 bg-[#ff6b35] hover:bg-[#ff5722] rounded-full transition-colors"
+                >
+                  <Play size={20} className="text-white" />
+                </button>
+              )}
+              <button 
+                onClick={resetTimer}
+                className="p-3 bg-[#252c3d] hover:bg-[#2d3548] rounded-full transition-colors"
+              >
+                <RotateCcw size={20} className="text-[#6b7280]" />
+              </button>
+              <button 
+                onClick={() => setTimeLeft(prev => prev + 60)}
+                className="px-3 py-2 bg-[#252c3d] hover:bg-[#2d3548] rounded-xl transition-colors flex items-center gap-1"
+              >
+                <Plus size={16} className="text-[#6b7280]" />
+                <span className="text-sm text-[#6b7280]">1:00</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      <div className="py-6 text-center relative z-10">
         {streak && streak.count >= 2 && (
-          <div className="flex items-center justify-center gap-2 mb-6 animate-float">
+          <div className="flex items-center justify-center gap-2 mb-4 animate-float">
             <span className="text-xl animate-fire">🔥</span>
             <span className="text-sm font-medium text-yellow-400 tracking-wide">
               {teams.find(t => t.id === streak.teamId)?.name} • {streak.count} streak
@@ -305,8 +446,6 @@ export default function LiveScoringPage() {
             </p>
           </div>
         </div>
-        
-        <p className="text-sm text-[#4b5563] mt-6 font-mono">First to {TARGET_SCORE}</p>
       </div>
       
       <div className="px-4 space-y-6 relative z-10">
@@ -357,6 +496,67 @@ export default function LiveScoringPage() {
         </Button>
       </div>
       
+      {/* Timer Setup Modal */}
+      {showTimerSetup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="card-gradient border border-[#2a3142] rounded-3xl p-6 max-w-sm mx-4 w-full animate-score-pop">
+            <h2 className="text-xl font-bold text-white text-center mb-2">Game Setup</h2>
+            <p className="text-sm text-[#6b7280] text-center mb-6">Set the game duration</p>
+            
+            <div className="grid grid-cols-2 gap-3 mb-6">
+              {GAME_DURATIONS.map(({ label, seconds }) => (
+                <button
+                  key={seconds}
+                  onClick={() => { setGameDuration(seconds); setTimeLeft(seconds) }}
+                  className={`p-4 rounded-xl border-2 transition-all ${
+                    gameDuration === seconds 
+                      ? 'border-[#ff6b35] bg-[#ff6b35]/10' 
+                      : 'border-[#2a3142] bg-[#252c3d] hover:border-[#363d4f]'
+                  }`}
+                >
+                  <span className={`text-lg font-bold ${gameDuration === seconds ? 'text-[#ff6b35]' : 'text-white'}`}>
+                    {label}
+                  </span>
+                </button>
+              ))}
+            </div>
+            
+            <Button onClick={startTimer} className="w-full shadow-glow" size="lg">
+              <Play size={20} className="mr-2" />
+              Start Game
+            </Button>
+          </div>
+        </div>
+      )}
+      
+      {/* Tie / Overtime Modal */}
+      {showTieModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="card-gradient border border-[#2a3142] rounded-3xl p-6 max-w-sm mx-4 w-full animate-score-pop">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-[#ff6b35]/20 rounded-2xl flex items-center justify-center mb-2">
+                <span className="text-3xl font-bold text-[#ff6b35]">TIE</span>
+              </div>
+              <h2 className="text-2xl font-bold text-white mt-4">It&apos;s a Tie!</h2>
+              <p className="text-4xl font-mono font-bold text-[#ff6b35] my-4">
+                {currentGame.team1_score} - {currentGame.team2_score}
+              </p>
+              <p className="text-[#6b7280]">Add overtime to break the tie</p>
+            </div>
+            
+            <div className="space-y-3">
+              <Button onClick={() => addOvertime(60)} className="w-full" size="lg">
+                +1 Minute Overtime
+              </Button>
+              <Button onClick={() => addOvertime(120)} variant="secondary" className="w-full" size="lg">
+                +2 Minutes Overtime
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Winner Modal */}
       {showGameEndModal && winner && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
           <div className="card-gradient border border-[#2a3142] rounded-3xl p-8 max-w-sm mx-4 text-center animate-score-pop">

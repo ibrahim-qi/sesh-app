@@ -53,7 +53,7 @@ export default function SessionsPage() {
       case 'live':
         return <span className="px-2 py-0.5 bg-red-500/20 text-red-400 text-xs font-medium rounded-full">🔴 Live</span>
       case 'upcoming':
-        return <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 text-xs font-medium rounded-full">📅 Upcoming</span>
+        return <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 text-xs font-medium rounded-full flex items-center gap-1"><span className="w-1.5 h-1.5 bg-blue-400 rounded-full" />Upcoming</span>
       case 'completed':
         return <span className="px-2 py-0.5 bg-green-500/20 text-green-400 text-xs font-medium rounded-full">✓ Completed</span>
       default:
@@ -98,7 +98,8 @@ export default function SessionsPage() {
                     <div className="flex items-center gap-2 mt-2">
                       <Avatar src={session.host.avatar_url} name={session.host.name} size="xs" />
                       <span className="text-xs text-[#6b7280]">
-                        🎫 {session.host.name}
+                        <span className="w-4 h-4 bg-blue-500/30 rounded flex items-center justify-center text-[8px] font-bold text-blue-400">H</span>
+                        {session.host.name}
                       </span>
                     </div>
                   )}

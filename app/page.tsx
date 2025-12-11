@@ -86,11 +86,32 @@ export default function LandingPage() {
           Track your sessions. Know your stats.
         </p>
         
-        {/* Decorative basketball lines */}
-        <div className="mt-6 flex items-center gap-3 text-[#2a3142]">
-          <div className="w-8 h-[2px] bg-current rounded-full" />
-          <span className="text-2xl">🏀</span>
-          <div className="w-8 h-[2px] bg-current rounded-full" />
+        {/* Animated basketball divider */}
+        <div className="mt-8 flex items-center gap-4">
+          <div className="w-12 h-[1px] bg-gradient-to-r from-transparent to-[#2a3142]" />
+          
+          {/* Custom dark basketball design */}
+          <div className="relative w-11 h-11 animate-float">
+            {/* Dark ball with subtle border */}
+            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#252c3d] to-[#1a1f2e] border border-[#363d4f]" 
+                 style={{ boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.05)' }}>
+              {/* Basketball seam lines in accent color */}
+              <svg viewBox="0 0 44 44" className="w-full h-full">
+                {/* Horizontal seam */}
+                <path d="M5 22 Q22 20, 39 22" stroke="#ff6b35" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.6" />
+                {/* Vertical seam */}
+                <path d="M22 5 Q20 22, 22 39" stroke="#ff6b35" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.6" />
+                {/* Left curve */}
+                <path d="M10 10 Q14 22, 10 34" stroke="#ff6b35" strokeWidth="1" fill="none" strokeLinecap="round" opacity="0.3" />
+                {/* Right curve */}
+                <path d="M34 10 Q30 22, 34 34" stroke="#ff6b35" strokeWidth="1" fill="none" strokeLinecap="round" opacity="0.3" />
+              </svg>
+            </div>
+            {/* Subtle top highlight */}
+            <div className="absolute top-1.5 left-3 w-3 h-1.5 bg-white/5 rounded-full blur-[1px]" />
+          </div>
+          
+          <div className="w-12 h-[1px] bg-gradient-to-l from-transparent to-[#2a3142]" />
         </div>
       </div>
       

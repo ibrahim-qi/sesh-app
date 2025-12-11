@@ -156,7 +156,9 @@ export default function LeaderboardPage() {
                 </div>
               ) : (
                 <div className="py-16 text-center text-[#6b7280]">
-                  <p className="text-4xl mb-3">🏀</p>
+                  <div className="w-14 h-14 bg-[#252c3d] rounded-2xl flex items-center justify-center mb-3">
+                    <span className="text-2xl font-bold text-[#6b7280]">—</span>
+                  </div>
                   <p>No stats yet</p>
                   <p className="text-sm">Play some games!</p>
                 </div>

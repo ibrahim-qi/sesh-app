@@ -53,7 +53,7 @@ export function TeamCard({ team, isYourTeam, score, isWinner, className }: TeamC
             <span className="text-xs bg-[#ff6b35]/20 text-[#ff6b35] px-1.5 py-0.5 rounded-full">You</span>
           )}
           {isWinner && (
-            <span className="text-xs">👑</span>
+            <span className="w-4 h-4 bg-yellow-500/30 rounded flex items-center justify-center text-[8px] font-bold text-yellow-400">W</span>
           )}
         </div>
         {score !== undefined && (
@@ -71,7 +71,7 @@ export function TeamCard({ team, isYourTeam, score, isWinner, className }: TeamC
             />
             <span className="text-sm text-[#a1a7b4]">
               {player.member.name.split(' ')[0]}
-              {player.is_captain && <span className="ml-1">⚡</span>}
+              {player.is_captain && <span className="ml-1 w-4 h-4 bg-yellow-500/30 rounded flex items-center justify-center text-[7px] font-bold text-yellow-400">C</span>}
             </span>
           </div>
         ))}

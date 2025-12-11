@@ -109,16 +109,16 @@ export default function ProfilePage() {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
   }
   
-  const getRoleBadge = (role: string) => {
+  const getRoleBadge = (role: string): { emoji: string; label: string; color: string; hasBadge?: boolean } => {
     switch (role) {
       case 'admin':
-        return { emoji: '👑', label: 'Admin', color: 'text-purple-400' }
+        return { emoji: '★', label: 'Admin', color: 'text-purple-400' }
       case 'host':
-        return { emoji: '🎫', label: 'Host', color: 'text-blue-400' }
+        return { emoji: 'H', label: 'Host', color: 'text-blue-400', hasBadge: true }
       case 'captain':
-        return { emoji: '⚡', label: 'Captain', color: 'text-yellow-400' }
+        return { emoji: 'C', label: 'Captain', color: 'text-yellow-400', hasBadge: true }
       default:
-        return { emoji: '🏀', label: 'Player', color: 'text-[#6b7280]' }
+        return { emoji: 'P', label: 'Player', color: 'text-[#6b7280]', hasBadge: true }
     }
   }
   
@@ -161,8 +161,14 @@ export default function ProfilePage() {
           </div>
           
           <h2 className="text-2xl font-bold text-white">{member?.name}</h2>
-          <p className={`text-sm mt-1 ${role.color}`}>
-            {role.emoji} {role.label}
+          <p className={`text-sm mt-1 flex items-center justify-center gap-1.5 ${role.color}`}>
+            <span className={`w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold ${
+              member?.role === 'admin' ? 'bg-purple-500/30' :
+              member?.role === 'host' ? 'bg-blue-500/30' :
+              member?.role === 'captain' ? 'bg-yellow-500/30' :
+              'bg-[#363d4f]'
+            }`}>{role.emoji}</span>
+            {role.label}
           </p>
         </Card>
         

@@ -99,7 +99,7 @@ export default function HomePage() {
       .select('points')
       .eq('group_member_id', memberData.id)
     
-    const totalPoints = scoresData?.reduce((sum, s) => sum + s.points, 0) || 0
+    const totalPoints = (scoresData as any[] || []).reduce((sum, s) => sum + s.points, 0)
     
     setStats({
       games: 0,

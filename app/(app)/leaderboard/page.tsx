@@ -24,39 +24,44 @@ export default function LeaderboardPage() {
     
     if (!memberData.group_id) return
     
-    const { data: members } = await supabase
+    const { data: membersData } = await supabase
       .from('group_members')
       .select('*')
       .eq('group_id', memberData.group_id)
     
-    if (!members) return
+    const members = membersData as any[] || []
+    if (members.length === 0) return
     
     const memberIds = members.map(m => m.id)
-    const { data: scores } = await supabase
+    const { data: scoresData } = await supabase
       .from('game_scores')
       .select('group_member_id, points')
       .in('group_member_id', memberIds)
     
-    const { data: teamAssignments } = await supabase
+    const { data: teamAssignmentsData } = await supabase
       .from('session_team_players')
       .select('group_member_id, session_team_id')
       .in('group_member_id', memberIds)
     
-    const { data: allGames } = await supabase
+    const { data: gamesData } = await supabase
       .from('games')
       .select('id, team1_id, team2_id, winner_team_id')
       .eq('status', 'completed')
     
+    const scores = scoresData as any[] || []
+    const teamAssignments = teamAssignmentsData as any[] || []
+    const allGames = gamesData as any[] || []
+    
     const memberStats = members.map(m => {
-      const memberScores = scores?.filter(s => s.group_member_id === m.id) || []
+      const memberScores = scores.filter(s => s.group_member_id === m.id)
       const totalPoints = memberScores.reduce((sum, s) => sum + s.points, 0)
       
-      const memberTeams = teamAssignments?.filter(t => t.group_member_id === m.id).map(t => t.session_team_id) || []
+      const memberTeams = teamAssignments.filter(t => t.group_member_id === m.id).map(t => t.session_team_id)
       
       let gamesPlayed = 0
       let wins = 0
       
-      allGames?.forEach(game => {
+      allGames.forEach(game => {
         const isOnTeam1 = memberTeams.includes(game.team1_id)
         const isOnTeam2 = memberTeams.includes(game.team2_id)
         

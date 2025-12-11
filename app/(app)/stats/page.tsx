@@ -31,10 +31,11 @@ export default function StatsPage() {
       .select('points')
       .eq('group_member_id', memberData.id)
     
-    const totalPoints = scoresData?.reduce((sum, s) => sum + s.points, 0) || 0
-    const threePointers = scoresData?.filter(s => s.points === 3).length || 0
-    const twoPointers = scoresData?.filter(s => s.points === 2).length || 0
-    const freeThrows = scoresData?.filter(s => s.points === 1).length || 0
+    const scores = scoresData as any[] || []
+    const totalPoints = scores.reduce((sum, s) => sum + s.points, 0)
+    const threePointers = scores.filter(s => s.points === 3).length
+    const twoPointers = scores.filter(s => s.points === 2).length
+    const freeThrows = scores.filter(s => s.points === 1).length
     
     // Get games played and wins
     const { data: teamAssignments } = await supabase
@@ -42,8 +43,9 @@ export default function StatsPage() {
       .select('session_team_id')
       .eq('group_member_id', memberData.id)
     
-    if (teamAssignments && teamAssignments.length > 0) {
-      const teamIds = teamAssignments.map(t => t.session_team_id)
+    const assignments = teamAssignments as any[] || []
+    if (assignments.length > 0) {
+      const teamIds = assignments.map(t => t.session_team_id)
       
       const { data: gamesAsTeam1 } = await supabase
         .from('games')
@@ -59,11 +61,11 @@ export default function StatsPage() {
       
       const allGames = new Map()
       
-      gamesAsTeam1?.forEach(g => {
+      ;(gamesAsTeam1 as any[] || []).forEach(g => {
         allGames.set(g.id, { ...g, playerTeamId: g.team1_id })
       })
       
-      gamesAsTeam2?.forEach(g => {
+      ;(gamesAsTeam2 as any[] || []).forEach(g => {
         if (!allGames.has(g.id)) {
           allGames.set(g.id, { ...g, playerTeamId: g.team2_id })
         }

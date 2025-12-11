@@ -81,30 +81,34 @@ export default function PlayerSessionPage() {
       .eq('session_id', sessionId)
       .order('created_at')
     
-    setGames(gamesData || [])
-    setCurrentGame(gamesData?.find((g: any) => g.status === 'in_progress') || null)
+    const games = gamesData as any[] || []
+    setGames(games)
+    setCurrentGame(games.find((g: any) => g.status === 'in_progress') || null)
     
     // Calculate scoreboard
-    if (gamesData && gamesData.length > 0) {
-      const gameIds = gamesData.map(g => g.id)
+    if (games.length > 0) {
+      const gameIds = games.map(g => g.id)
       const { data: scoresData } = await supabase
         .from('game_scores')
         .select('group_member_id, points')
         .in('game_id', gameIds)
       
-      const { data: members } = await supabase
+      const { data: membersData } = await supabase
         .from('group_members')
         .select('*')
         .eq('group_id', memberData.group_id)
       
+      const scores = scoresData as any[] || []
+      const members = membersData as any[] || []
+      
       const playerPoints: Record<string, number> = {}
-      scoresData?.forEach(s => {
+      scores.forEach(s => {
         playerPoints[s.group_member_id] = (playerPoints[s.group_member_id] || 0) + s.points
       })
       
       const board = Object.entries(playerPoints)
         .map(([memberId, points]) => ({
-          member: members?.find(m => m.id === memberId),
+          member: members.find(m => m.id === memberId),
           points
         }))
         .sort((a, b) => (b.points as number) - (a.points as number))

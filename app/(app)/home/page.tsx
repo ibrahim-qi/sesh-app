@@ -48,7 +48,7 @@ export default function HomePage() {
       .in('status', ['upcoming', 'live'])
       .order('date', { ascending: true })
       .limit(1)
-      .single()
+      .maybeSingle()
     
     setUpcomingSession(sessionData)
     

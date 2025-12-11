@@ -80,15 +80,18 @@ export default function JoinPage() {
   }
   
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#1a1f2e] to-[#0f1219] flex flex-col">
+    <div className="fixed inset-0 bg-gradient-to-b from-[#1a1f2e] to-[#0f1219] flex flex-col overflow-hidden">
+      {/* Safe area top */}
+      <div className="pt-[env(safe-area-inset-top)]" />
+      
       <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
         <p className="text-[#6b7280] text-sm uppercase tracking-wide mb-2">Join</p>
         <h1 className="text-3xl font-bold text-white mb-2">{group.name}</h1>
         <p className="text-[#6b7280]">Enter your name to continue</p>
       </div>
       
-      <div className="p-6 pb-8">
-        <form onSubmit={handleJoin} className="space-y-4">
+      <div className="px-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] pt-4">
+        <form onSubmit={handleJoin} className="space-y-3 max-w-sm mx-auto">
           <input
             type="text"
             placeholder="Enter your full name"
@@ -103,7 +106,7 @@ export default function JoinPage() {
           <button
             type="submit"
             disabled={joining || !name.trim()}
-            className="w-full h-14 bg-[#ff6b35] hover:bg-[#ff5722] disabled:opacity-50 disabled:cursor-not-allowed rounded-2xl text-white font-semibold text-lg transition-colors"
+            className="w-full h-14 bg-[#ff6b35] hover:bg-[#ff5722] disabled:opacity-50 disabled:cursor-not-allowed rounded-2xl text-white font-semibold text-lg transition-colors active:scale-[0.98]"
           >
             {joining ? (
               <span className="inline-flex items-center gap-2">

@@ -55,7 +55,7 @@ export default function AdminSettingsPage() {
     
     await supabase
       .from('groups')
-      .update({ name: groupName.trim() })
+      .update({ name: groupName.trim() } as any)
       .eq('id', group.id)
     
     setGroup({ ...group, name: groupName.trim() })

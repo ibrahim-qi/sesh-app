@@ -135,7 +135,7 @@ export default function NewSessionPage() {
           date: `${date}T${time}:00`,
           location,
           status: 'upcoming',
-        })
+        } as any)
         .select()
         .single()
       
@@ -151,7 +151,7 @@ export default function NewSessionPage() {
             name: team.name,
             color: team.color,
             captain_id: team.captainId,
-          })
+          } as any)
           .select()
           .single()
         
@@ -162,7 +162,7 @@ export default function NewSessionPage() {
           group_member_id: playerId,
         }))
         
-        await supabase.from('session_team_players').insert(playerInserts)
+        await supabase.from('session_team_players').insert(playerInserts as any)
       }
       
       router.push('/sessions')

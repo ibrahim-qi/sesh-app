@@ -53,7 +53,7 @@ export default function LiveScoringPage() {
     }
     
     if (sessionData.status === 'upcoming') {
-      await supabase.from('sessions').update({ status: 'live' }).eq('id', sessionId)
+      await supabase.from('sessions').update({ status: 'live' } as any).eq('id', sessionId)
       sessionData.status = 'live'
     }
     
@@ -121,7 +121,7 @@ export default function LiveScoringPage() {
         team1_score: 0,
         team2_score: 0,
         status: 'in_progress',
-      })
+      } as any)
       .select()
       .single()
     
@@ -141,7 +141,7 @@ export default function LiveScoringPage() {
     
     const { data: newScore } = await supabase
       .from('game_scores')
-      .insert({ game_id: currentGame.id, group_member_id: memberId, team_id: teamId, points })
+      .insert({ game_id: currentGame.id, group_member_id: memberId, team_id: teamId, points } as any)
       .select()
       .single()
     
@@ -151,7 +151,7 @@ export default function LiveScoringPage() {
     const newTeam1Score = isTeam1 ? currentGame.team1_score + points : currentGame.team1_score
     const newTeam2Score = !isTeam1 ? currentGame.team2_score + points : currentGame.team2_score
     
-    await supabase.from('games').update({ team1_score: newTeam1Score, team2_score: newTeam2Score }).eq('id', currentGame.id)
+    await supabase.from('games').update({ team1_score: newTeam1Score, team2_score: newTeam2Score } as any).eq('id', currentGame.id)
     
     setCurrentGame((prev: any) => ({ ...prev, team1_score: newTeam1Score, team2_score: newTeam2Score }))
     setScores(prev => [...prev, newScore])
@@ -173,7 +173,7 @@ export default function LiveScoringPage() {
     const newTeam1Score = isTeam1 ? currentGame.team1_score - lastScore.points : currentGame.team1_score
     const newTeam2Score = !isTeam1 ? currentGame.team2_score - lastScore.points : currentGame.team2_score
     
-    await supabase.from('games').update({ team1_score: newTeam1Score, team2_score: newTeam2Score }).eq('id', currentGame.id)
+    await supabase.from('games').update({ team1_score: newTeam1Score, team2_score: newTeam2Score } as any).eq('id', currentGame.id)
     
     setCurrentGame((prev: any) => ({ ...prev, team1_score: newTeam1Score, team2_score: newTeam2Score }))
     setScores(prev => prev.slice(0, -1))
@@ -186,7 +186,7 @@ export default function LiveScoringPage() {
       status: 'completed',
       winner_team_id: winner.id,
       completed_at: new Date().toISOString(),
-    }).eq('id', currentGame.id)
+    } as any).eq('id', currentGame.id)
     
     if (streak?.teamId === winner.id) {
       setStreak({ teamId: winner.id, count: streak.count + 1 })
@@ -206,14 +206,14 @@ export default function LiveScoringPage() {
   const handleEndSession = async () => {
     if (!confirm('End this session?')) return
     
-    await supabase.from('sessions').update({ status: 'completed' }).eq('id', sessionId)
+    await supabase.from('sessions').update({ status: 'completed' } as any).eq('id', sessionId)
     
     if (currentGame?.status === 'in_progress') {
       await supabase.from('games').update({
         status: 'completed',
         winner_team_id: currentGame.team1_score > currentGame.team2_score ? currentGame.team1_id : currentGame.team2_id,
         completed_at: new Date().toISOString(),
-      }).eq('id', currentGame.id)
+      } as any).eq('id', currentGame.id)
     }
     
     router.push('/sessions')

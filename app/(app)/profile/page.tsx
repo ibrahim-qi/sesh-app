@@ -69,7 +69,7 @@ export default function ProfilePage() {
       .update({
         name: editName.trim(),
         avatar_url: finalAvatarUrl,
-      })
+      } as any)
       .eq('id', member.id)
       .select()
       .single()

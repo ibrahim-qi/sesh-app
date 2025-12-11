@@ -44,7 +44,7 @@ export default function AdminSetupPage() {
         .insert({
           name: squadName.trim(),
           invite_code: generateInviteCode(),
-        })
+        } as any)
         .select()
         .single()
       
@@ -79,7 +79,7 @@ export default function AdminSetupPage() {
           name: adminName.trim(),
           avatar_url: finalAvatarUrl,
           role: 'admin',
-        })
+        } as any)
         .select()
         .single()
       

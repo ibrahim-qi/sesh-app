@@ -54,7 +54,7 @@ export default function RosterPage() {
         group_id: member.group_id,
         name: newPlayerName.trim(),
         role: 'player',
-      })
+      } as any)
     
     if (!error) {
       await loadMembers(member.group_id)
@@ -81,7 +81,7 @@ export default function RosterPage() {
     
     await supabase
       .from('group_members')
-      .update({ role: newRole })
+      .update({ role: newRole } as any)
       .eq('id', selectedMember.id)
     
     setMembers(members.map(m => 

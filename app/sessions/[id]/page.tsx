@@ -95,7 +95,7 @@ export default function SessionDetailPage() {
   const handleStartSession = async () => {
     await supabase
       .from('sessions')
-      .update({ status: 'live' })
+      .update({ status: 'live' } as any)
       .eq('id', sessionId)
     
     router.push(`/sessions/${sessionId}/live`)

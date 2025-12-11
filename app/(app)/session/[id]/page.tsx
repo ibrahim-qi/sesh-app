@@ -124,7 +124,7 @@ export default function PlayerSessionPage() {
     
     await supabase
       .from('session_teams')
-      .update({ name: newTeamName.trim() })
+      .update({ name: newTeamName.trim() } as any)
       .eq('id', userTeam.id)
     
     loadData()

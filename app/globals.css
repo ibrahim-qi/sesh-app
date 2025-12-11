@@ -1,0 +1,414 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #0f1219;
+  --bg-secondary: #1a1f2e;
+  --bg-card: #1e2433;
+  --bg-elevated: #252c3d;
+  --border: #2a3142;
+  --border-light: #363d4f;
+  --text-primary: #ffffff;
+  --text-secondary: #a1a7b4;
+  --text-muted: #6b7280;
+  --accent: #ff6b35;
+  --accent-hover: #ff5722;
+  --success: #22c55e;
+  --danger: #ef4444;
+  
+  /* Safe area variables */
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  /* Prevent text selection on long press */
+  -webkit-user-select: none;
+  user-select: none;
+  /* Prevent callout on long press */
+  -webkit-touch-callout: none;
+}
+
+/* Allow text selection in inputs */
+input, textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+html {
+  /* Prevent overscroll bounce */
+  overscroll-behavior: none;
+  /* Smooth scrolling */
+  scroll-behavior: smooth;
+  /* Full height */
+  height: 100%;
+  /* Prevent pull-to-refresh */
+  overflow: hidden;
+}
+
+body {
+  height: 100%;
+  overflow: auto;
+  overscroll-behavior-y: contain;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Prevent iOS zoom on input focus */
+  touch-action: manipulation;
+}
+
+/* Subtle noise texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.015;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  z-index: 9999;
+}
+
+/* iOS-like touch feedback */
+button, a {
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+}
+
+button:active, a:active {
+  transform: scale(0.98);
+  transition: transform 0.1s ease;
+}
+
+/* Momentum scrolling for iOS */
+.scroll-container {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Hide scrollbar but keep functionality */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Custom scrollbar for desktop */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a3142;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #363d4f;
+}
+
+/* Score number styling */
+.score-number {
+  font-family: var(--font-mono), monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* Big score display */
+.score-big {
+  font-family: var(--font-mono), monospace;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 40px currentColor;
+}
+
+/* Stat numbers */
+.stat-number {
+  font-family: var(--font-mono), monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #ff6b35 0%, #ff8f6b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glow effect */
+.glow {
+  box-shadow: 0 0 20px rgba(255, 107, 53, 0.4);
+}
+
+.glow-sm {
+  box-shadow: 0 0 10px rgba(255, 107, 53, 0.3);
+}
+
+.shadow-glow {
+  box-shadow: 0 0 20px rgba(255, 107, 53, 0.4);
+}
+
+.shadow-glow-sm {
+  box-shadow: 0 0 10px rgba(255, 107, 53, 0.3);
+}
+
+/* Card with subtle gradient border */
+.card-gradient {
+  position: relative;
+  background: linear-gradient(180deg, #1e2433 0%, #1a1f2e 100%);
+}
+
+.card-gradient::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Team color classes - dark theme optimized */
+.team-red {
+  --team-color: #ef4444;
+  --team-bg: rgba(239, 68, 68, 0.15);
+  --team-border: rgba(239, 68, 68, 0.3);
+}
+
+.team-blue {
+  --team-color: #3b82f6;
+  --team-bg: rgba(59, 130, 246, 0.15);
+  --team-border: rgba(59, 130, 246, 0.3);
+}
+
+.team-white {
+  --team-color: #9ca3af;
+  --team-bg: rgba(156, 163, 175, 0.15);
+  --team-border: rgba(156, 163, 175, 0.3);
+}
+
+.team-green {
+  --team-color: #22c55e;
+  --team-bg: rgba(34, 197, 94, 0.15);
+  --team-border: rgba(34, 197, 94, 0.3);
+}
+
+.team-purple {
+  --team-color: #a855f7;
+  --team-bg: rgba(168, 85, 247, 0.15);
+  --team-border: rgba(168, 85, 247, 0.3);
+}
+
+.team-yellow {
+  --team-color: #eab308;
+  --team-bg: rgba(234, 179, 8, 0.15);
+  --team-border: rgba(234, 179, 8, 0.3);
+}
+
+/* PWA safe areas */
+.safe-top {
+  padding-top: var(--safe-area-top);
+}
+
+.safe-bottom {
+  padding-bottom: var(--safe-area-bottom);
+}
+
+.safe-left {
+  padding-left: var(--safe-area-left);
+}
+
+.safe-right {
+  padding-right: var(--safe-area-right);
+}
+
+.safe-x {
+  padding-left: var(--safe-area-left);
+  padding-right: var(--safe-area-right);
+}
+
+.safe-all {
+  padding-top: var(--safe-area-top);
+  padding-bottom: var(--safe-area-bottom);
+  padding-left: var(--safe-area-left);
+  padding-right: var(--safe-area-right);
+}
+
+/* Bottom nav spacing - accounts for nav height + safe area */
+.pb-nav {
+  padding-bottom: calc(56px + var(--safe-area-bottom));
+}
+
+/* Live indicator pulse */
+@keyframes pulse-live {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse-live {
+  animation: pulse-live 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Streak fire animation */
+@keyframes flicker {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.animate-fire {
+  animation: flicker 0.5s ease-in-out infinite;
+}
+
+/* Float animation */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Slide up animation */
+@keyframes slideUp {
+  0% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* Score pop animation */
+@keyframes scorePop {
+  0% {
+    transform: scale(1.3);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-score-pop {
+  animation: scorePop 0.3s ease-out;
+}
+
+/* Page transition */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.page-transition {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Score button styles - dark theme */
+.score-btn {
+  @apply flex items-center justify-center rounded-xl font-semibold transition-all duration-150 active:scale-95;
+  /* Minimum touch target */
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.score-btn-1 {
+  @apply bg-[#252c3d] text-[#a1a7b4] hover:bg-[#2d3548] border border-[#363d4f];
+}
+
+.score-btn-2 {
+  @apply bg-[#ff6b35]/20 text-[#ff6b35] hover:bg-[#ff6b35]/30 border border-[#ff6b35]/30;
+}
+
+.score-btn-3 {
+  @apply bg-[#ff6b35] text-white hover:bg-[#ff5722];
+}
+
+/* Smooth state transitions */
+.transition-smooth {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Focus ring */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-[#ff6b35] focus:ring-offset-2 focus:ring-offset-[#0f1219];
+}
+
+/* Badge pill */
+.badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+/* Empty state */
+.empty-state {
+  @apply flex flex-col items-center justify-center text-center py-12;
+}
+
+/* Divider */
+.divider {
+  @apply border-t border-[#2a3142];
+}
+
+/* iOS-style header */
+.header-ios {
+  @apply sticky top-0 z-40 bg-[#1a1f2e]/80 backdrop-blur-xl border-b border-[#2a3142]/50;
+  padding-top: var(--safe-area-top);
+}
+
+/* Clickable list item */
+.list-item {
+  @apply flex items-center gap-3 p-3 rounded-xl transition-colors active:bg-[#252c3d];
+  min-height: 52px;
+}
+
+/* Input iOS style */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="date"],
+input[type="time"] {
+  font-size: 16px; /* Prevents iOS zoom */
+}

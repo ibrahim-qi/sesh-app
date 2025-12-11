@@ -45,15 +45,14 @@ export default function HomePage() {
       .from('sessions')
       .select('*')
       .eq('group_id', memberData.group_id)
-      .in('status', ['upcoming', 'live'] as const)
+      .or('status.eq.upcoming,status.eq.live')
       .order('date', { ascending: true })
       .limit(1)
-      .maybeSingle()
     
-    setUpcomingSession(sessionData)
+    const session = sessionData?.[0] as any
+    setUpcomingSession(session)
     
-    if (sessionData) {
-      const session = sessionData as any
+    if (session) {
       // Get session host
       if (session.host_id) {
         const { data: hostData } = await supabase
@@ -77,7 +76,7 @@ export default function HomePage() {
         .eq('session_id', session.id)
       
       if (teamsData) {
-        const formattedTeams = teamsData.map(team => ({
+        const formattedTeams = (teamsData as any[]).map(team => ({
           ...team,
           players: team.session_team_players?.map((tp: any) => ({
             ...tp,

@@ -58,13 +58,13 @@ export default function PlayerSessionPage() {
       `)
       .eq('session_id', sessionId)
     
-    const formattedTeams = teamsData?.map(team => ({
+    const formattedTeams = (teamsData as any[] || []).map(team => ({
       ...team,
       players: team.session_team_players?.map((tp: any) => ({
         ...tp,
         member: tp.group_members
       })) || []
-    })) || []
+    }))
     
     setTeams(formattedTeams)
     

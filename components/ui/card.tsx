@@ -11,9 +11,9 @@ export function Card({ className, hover, gradient, children, ...props }: CardPro
   return (
     <div
       className={cn(
-        'rounded-2xl p-4 border border-[#2a3142]',
-        gradient ? 'card-gradient' : 'bg-[#1e2433]',
-        hover && 'transition-all duration-200 hover:bg-[#252c3d] hover:border-[#363d4f] cursor-pointer',
+        'rounded-2xl p-4 border border-[#2a3142] relative overflow-hidden',
+        'bg-[#1e2433]/60 backdrop-blur-md shadow-lg',
+        hover && 'transition-all duration-200 hover:bg-[#252c3d]/70 hover:border-[#363d4f] hover:shadow-xl cursor-pointer',
         className
       )}
       {...props}

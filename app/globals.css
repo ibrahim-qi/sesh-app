@@ -372,6 +372,7 @@ button:active, a:active {
 }
 
 /* Score button styles - dark theme */
+/* Score button styles - dark theme */
 .score-btn {
   @apply flex items-center justify-center rounded-xl font-semibold transition-all duration-150 active:scale-95;
   /* Minimum touch target */
@@ -388,7 +389,7 @@ button:active, a:active {
 }
 
 .score-btn-3 {
-  @apply bg-[#ff6b35] text-white hover:bg-[#ff5722];
+  @apply bg-gradient-to-r from-[#ff6b35] to-[#ff5722] text-white hover:from-[#ff5722] hover:to-[#e64a19] shadow-glow-sm;
 }
 
 /* Smooth state transitions */
@@ -416,15 +417,15 @@ button:active, a:active {
   @apply border-t border-[#2a3142];
 }
 
-/* iOS-style header */
+/* iOS-style header - updated for global gradient */
 .header-ios {
-  @apply sticky top-0 z-40 bg-[#1a1f2e]/80 backdrop-blur-xl border-b border-[#2a3142]/50;
+  @apply sticky top-0 z-40 bg-[#0f1219]/60 backdrop-blur-xl border-b border-[#ffffff]/5;
   padding-top: var(--safe-area-top);
 }
 
 /* Clickable list item */
 .list-item {
-  @apply flex items-center gap-3 p-3 rounded-xl transition-colors active:bg-[#252c3d];
+  @apply flex items-center gap-3 p-3 rounded-xl transition-colors active:bg-[#ffffff]/5;
   min-height: 52px;
 }
 

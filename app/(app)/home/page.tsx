@@ -132,7 +132,7 @@ export default function HomePage() {
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-bold text-white">
+              <h1 className="text-xl font-bold gradient-text">
                 {group?.name || 'Sesh'}
               </h1>
               <p className="text-sm text-[#6b7280]">

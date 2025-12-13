@@ -29,7 +29,7 @@ const teamColors: Record<string, { bg: string; border: string; text: string; glo
   green: { bg: 'bg-green-500/10', border: 'border-green-500/30', text: 'text-green-300', glow: 'shadow-green-500/20' },
   purple: { bg: 'bg-purple-500/10', border: 'border-purple-500/30', text: 'text-purple-300', glow: 'shadow-purple-500/20' },
   yellow: { bg: 'bg-yellow-500/10', border: 'border-yellow-500/30', text: 'text-yellow-300', glow: 'shadow-yellow-500/20' },
-  white: { bg: 'bg-[#252c3d]', border: 'border-[#363d4f]', text: 'text-[#a1a7b4]' },
+  white: { bg: 'bg-[#252c3d]/60', border: 'border-[#363d4f]/60', text: 'text-[#a1a7b4]' },
 }
 
 export function TeamCard({ team, isYourTeam, score, isWinner, className }: TeamCardProps) {

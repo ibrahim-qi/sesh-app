@@ -20,26 +20,26 @@ export default function HomePage() {
   const [allTeams, setAllTeams] = useState<any[]>([])
   const [stats, setStats] = useState({ games: 0, wins: 0, points: 0 })
   const [copied, setCopied] = useState(false)
-  
+
   useEffect(() => {
     loadData()
   }, [])
-  
+
   const loadData = async () => {
     const memberData = JSON.parse(localStorage.getItem('hoops_member') || '{}')
     setMember(memberData)
-    
+
     if (!memberData.group_id) return
-    
+
     // Get group
     const { data: groupData } = await supabase
       .from('groups')
       .select('*')
       .eq('id', memberData.group_id)
       .single()
-    
+
     setGroup(groupData)
-    
+
     // Get upcoming/live session
     const { data: sessionData } = await supabase
       .from('sessions')
@@ -48,10 +48,10 @@ export default function HomePage() {
       .or('status.eq.upcoming,status.eq.live')
       .order('date', { ascending: true })
       .limit(1)
-    
+
     const session = sessionData?.[0] as any
     setUpcomingSession(session)
-    
+
     if (session) {
       // Get session host
       if (session.host_id) {
@@ -62,7 +62,7 @@ export default function HomePage() {
           .single()
         setSessionHost(hostData)
       }
-      
+
       // Get teams with players
       const { data: teamsData } = await supabase
         .from('session_teams')
@@ -74,7 +74,7 @@ export default function HomePage() {
           )
         `)
         .eq('session_id', session.id)
-      
+
       if (teamsData) {
         const formattedTeams = (teamsData as any[]).map(team => ({
           ...team,
@@ -83,31 +83,31 @@ export default function HomePage() {
             member: tp.group_members
           })) || []
         }))
-        
+
         setAllTeams(formattedTeams)
-        
+
         const myTeam = formattedTeams.find(team =>
           team.players.some((p: any) => p.group_member_id === memberData.id)
         )
         setUserTeam(myTeam)
       }
     }
-    
+
     // Get stats
     const { data: scoresData } = await supabase
       .from('game_scores')
       .select('points')
       .eq('group_member_id', memberData.id)
-    
+
     const totalPoints = (scoresData as any[] || []).reduce((sum, s) => sum + s.points, 0)
-    
+
     setStats({
       games: 0,
       wins: 0,
       points: totalPoints,
     })
   }
-  
+
   const copyInviteLink = async () => {
     if (!group) return
     const link = `${window.location.origin}/join/${group.invite_code}`
@@ -117,14 +117,14 @@ export default function HomePage() {
     if (navigator.vibrate) navigator.vibrate(50)
     setTimeout(() => setCopied(false), 2000)
   }
-  
+
   const isAdmin = member?.role === 'admin'
   const isHost = member?.role === 'host'
   const canManage = isAdmin || isHost
-  
+
   // Check if user can manage this specific session
   const canManageSession = isAdmin || (upcomingSession?.host_id === member?.id) || (upcomingSession?.created_by === member?.id)
-  
+
   return (
     <div className="min-h-screen">
       {/* iOS-style Header */}
@@ -149,7 +149,7 @@ export default function HomePage() {
           </div>
         </div>
       </header>
-      
+
       <div className="p-4 space-y-4">
         {/* Quick Actions for Admin/Host */}
         {canManage && (
@@ -180,7 +180,7 @@ export default function HomePage() {
             </Link>
           </div>
         )}
-        
+
         {/* Upcoming Session */}
         {upcomingSession ? (
           <Card gradient>
@@ -214,25 +214,25 @@ export default function HomePage() {
                 </Link>
               )}
             </div>
-            
+
             <p className="text-lg font-semibold text-white">
               {formatDate(upcomingSession.date)}
             </p>
             <p className="text-sm text-[#6b7280] mb-3">
               {formatTime(upcomingSession.date)} • {upcomingSession.location}
             </p>
-            
+
             {/* Session Host */}
             {sessionHost && (
               <div className="flex items-center gap-2 mb-4 p-2.5 bg-blue-500/10 border border-blue-500/20 rounded-xl">
                 <span className="w-5 h-5 bg-blue-500/30 rounded flex items-center justify-center text-[10px] font-bold text-blue-400">H</span>
-                <Avatar src={sessionHost.avatar_url} name={sessionHost.name} size="xs" />
+                <Avatar src={sessionHost.avatar_url} name={sessionHost.name} size="sm" />
                 <span className="text-sm text-blue-400">
                   Hosted by <span className="font-medium">{sessionHost.name}</span>
                 </span>
               </div>
             )}
-            
+
             {userTeam && (
               <div className="mb-4">
                 <p className="text-xs font-semibold text-[#6b7280] uppercase tracking-wider mb-2">
@@ -241,7 +241,7 @@ export default function HomePage() {
                 <TeamCard team={userTeam} isYourTeam />
               </div>
             )}
-            
+
             {allTeams.filter(t => t.id !== userTeam?.id).length > 0 && (
               <div>
                 <p className="text-xs font-semibold text-[#6b7280] uppercase tracking-wider mb-2">
@@ -256,14 +256,20 @@ export default function HomePage() {
             )}
           </Card>
         ) : (
-          <Card className="text-center py-10">
-            <div className="w-14 h-14 bg-[#252c3d] rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Calendar size={28} className="text-[#6b7280]" />
+          <Card className="relative overflow-hidden min-h-[160px] flex flex-col items-center justify-center p-6 text-center group">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#252c3d]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-[#2a3142] to-transparent" />
+
+            <div className="w-16 h-16 bg-[#252c3d] rounded-2xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-105 transition-transform duration-300">
+              <Calendar size={32} className="text-[#6b7280]" />
             </div>
-            <p className="text-[#6b7280] mb-4">No upcoming session</p>
+
+            <p className="text-[#9ca3af] font-medium mb-1">No upcoming session</p>
+            <p className="text-sm text-[#6b7280] mb-5">Rest up for the next one</p>
+
             {canManage && (
               <Link href="/sessions/new">
-                <Button>
+                <Button className="shadow-lg hover:shadow-glow-sm transition-all">
                   <Plus size={18} className="mr-2" />
                   Create Session
                 </Button>
@@ -271,7 +277,7 @@ export default function HomePage() {
             )}
           </Card>
         )}
-        
+
         {/* Your Stats */}
         <Card gradient>
           <CardTitle>Your Stats</CardTitle>
@@ -291,7 +297,7 @@ export default function HomePage() {
             </div>
           </div>
         </Card>
-        
+
         {/* Invite Link (Admin only) */}
         {isAdmin && group && (
           <Card>

@@ -14,20 +14,20 @@ export default function SessionsPage() {
   const router = useRouter()
   const [member, setMember] = useState<any>(null)
   const [sessions, setSessions] = useState<any[]>([])
-  
+
   useEffect(() => {
     const memberData = JSON.parse(localStorage.getItem('hoops_member') || '{}')
     setMember(memberData)
-    
+
     // Only admin and hosts can access this page
     if (memberData.role !== 'admin' && memberData.role !== 'host') {
       router.push('/home')
       return
     }
-    
+
     loadSessions(memberData.group_id)
   }, [router])
-  
+
   const loadSessions = async (groupId: string) => {
     const { data } = await supabase
       .from('sessions')
@@ -37,17 +37,17 @@ export default function SessionsPage() {
       `)
       .eq('group_id', groupId)
       .order('date', { ascending: false })
-    
+
     setSessions(data || [])
   }
-  
+
   const canEditSession = (session: any) => {
     if (member?.role === 'admin') return true
     if (session.host_id === member?.id) return true
     if (session.created_by === member?.id) return true
     return false
   }
-  
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'live':
@@ -60,7 +60,7 @@ export default function SessionsPage() {
         return null
     }
   }
-  
+
   return (
     <div className="min-h-screen bg-[#0f1219] safe-top">
       <div className="bg-[#1a1f2e] border-b border-[#2a3142]">
@@ -82,7 +82,7 @@ export default function SessionsPage() {
           </Link>
         </div>
       </div>
-      
+
       <div className="p-4 space-y-3">
         {sessions.map((session) => (
           <Link key={session.id} href={`/sessions/${session.id}`}>
@@ -92,11 +92,11 @@ export default function SessionsPage() {
                   <div className="flex items-center gap-2 mb-1">{getStatusBadge(session.status)}</div>
                   <p className="font-semibold text-white">{formatDate(session.date)}</p>
                   <p className="text-sm text-[#6b7280]">{formatTime(session.date)} • {session.location}</p>
-                  
+
                   {/* Host info */}
                   {session.host && (
                     <div className="flex items-center gap-2 mt-2">
-                      <Avatar src={session.host.avatar_url} name={session.host.name} size="xs" />
+                      <Avatar src={session.host_id ? 'https://github.com/shadcn.png' : undefined} name="Host" size="sm" />
                       <span className="text-xs text-[#6b7280]">
                         <span className="w-4 h-4 bg-blue-500/30 rounded flex items-center justify-center text-[8px] font-bold text-blue-400">H</span>
                         {session.host.name}
@@ -114,7 +114,7 @@ export default function SessionsPage() {
             </Card>
           </Link>
         ))}
-        
+
         {sessions.length === 0 && (
           <Card className="text-center py-12">
             <Calendar size={48} className="mx-auto text-[#2a3142] mb-4" />

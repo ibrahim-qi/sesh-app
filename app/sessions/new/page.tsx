@@ -14,15 +14,15 @@ import { supabase } from '@/lib/supabase/client'
 export default function NewSessionPage() {
   const router = useRouter()
   const [step, setStep] = useState(1)
-  
+
   const [date, setDate] = useState('')
   const [time, setTime] = useState('19:00')
   const [location, setLocation] = useState('')
   const [hostId, setHostId] = useState<string | null>(null)
-  
+
   const [members, setMembers] = useState<any[]>([])
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([])
-  
+
   const [teams, setTeams] = useState<{
     id: string
     name: string
@@ -34,42 +34,42 @@ export default function NewSessionPage() {
     { id: 'team2', name: 'Team 2', color: 'blue', players: [], captainId: null },
     { id: 'team3', name: 'Team 3', color: 'white', players: [], captainId: null },
   ])
-  
+
   const [member, setMember] = useState<any>(null)
   const [loading, setLoading] = useState(false)
-  
+
   useEffect(() => {
     const memberData = JSON.parse(localStorage.getItem('hoops_member') || '{}')
     setMember(memberData)
-    
+
     if (memberData.role !== 'admin' && memberData.role !== 'host') {
       router.push('/home')
       return
     }
-    
+
     // Default host to self if user is a host
     if (memberData.role === 'host') {
       setHostId(memberData.id)
     }
-    
+
     loadMembers(memberData.group_id)
-    
+
     const today = new Date()
     const nextSat = new Date(today)
     nextSat.setDate(today.getDate() + (6 - today.getDay() + 7) % 7 || 7)
     setDate(nextSat.toISOString().split('T')[0])
   }, [router])
-  
+
   const loadMembers = async (groupId: string) => {
     const { data } = await supabase
       .from('group_members')
       .select('*')
       .eq('group_id', groupId)
       .order('name')
-    
+
     setMembers(data || [])
   }
-  
+
   const togglePlayer = (memberId: string) => {
     setSelectedPlayers(prev =>
       prev.includes(memberId)
@@ -77,7 +77,7 @@ export default function NewSessionPage() {
         : [...prev, memberId]
     )
   }
-  
+
   const assignToTeam = (playerId: string, teamId: string) => {
     setTeams(prev => prev.map(team => ({
       ...team,
@@ -86,7 +86,7 @@ export default function NewSessionPage() {
         : team.players.filter(p => p !== playerId)
     })))
   }
-  
+
   const removeFromTeam = (playerId: string) => {
     setTeams(prev => prev.map(team => ({
       ...team,
@@ -94,7 +94,7 @@ export default function NewSessionPage() {
       captainId: team.captainId === playerId ? null : team.captainId
     })))
   }
-  
+
   const toggleCaptain = (teamId: string, playerId: string) => {
     setTeams(prev => prev.map(team => ({
       ...team,
@@ -103,28 +103,28 @@ export default function NewSessionPage() {
         : team.captainId
     })))
   }
-  
+
   const updateTeamName = (teamId: string, name: string) => {
     setTeams(prev => prev.map(team =>
       team.id === teamId ? { ...team, name } : team
     ))
   }
-  
+
   const updateTeamColor = (teamId: string, color: TeamColor) => {
     setTeams(prev => prev.map(team =>
       team.id === teamId ? { ...team, color } : team
     ))
   }
-  
+
   const unassignedPlayers = selectedPlayers.filter(
     playerId => !teams.some(team => team.players.includes(playerId))
   )
-  
+
   const handleCreateSession = async () => {
     if (!member?.group_id) return
-    
+
     setLoading(true)
-    
+
     try {
       const { data: session, error: sessionError } = await supabase
         .from('sessions')
@@ -138,12 +138,12 @@ export default function NewSessionPage() {
         } as any)
         .select()
         .single()
-      
+
       if (sessionError) throw sessionError
-      
+
       for (const team of teams) {
         if (team.players.length === 0) continue
-        
+
         const { data: teamData, error: teamError } = await supabase
           .from('session_teams')
           .insert({
@@ -154,17 +154,17 @@ export default function NewSessionPage() {
           } as any)
           .select()
           .single()
-        
+
         if (teamError) throw teamError
-        
+
         const playerInserts = team.players.map(playerId => ({
           session_team_id: teamData.id,
           group_member_id: playerId,
         }))
-        
+
         await supabase.from('session_team_players').insert(playerInserts as any)
       }
-      
+
       router.push('/sessions')
     } catch (err) {
       console.error(err)
@@ -172,13 +172,13 @@ export default function NewSessionPage() {
       setLoading(false)
     }
   }
-  
+
   const getMember = (id: string) => members.find(m => m.id === id)
   const isAdmin = member?.role === 'admin'
-  
+
   return (
-    <div className="min-h-screen bg-[#0f1219] safe-top pb-24">
-      <div className="bg-[#1a1f2e] border-b border-[#2a3142]">
+    <div className="min-h-screen safe-top pb-24">
+      <div className="border-b border-[#ffffff]/5">
         <div className="flex items-center gap-4 p-4">
           <Link href="/sessions" className="p-2 -ml-2 rounded-full hover:bg-[#252c3d] transition-colors">
             <ArrowLeft size={24} className="text-[#6b7280]" />
@@ -188,7 +188,7 @@ export default function NewSessionPage() {
             <p className="text-sm text-[#6b7280]">Step {step} of 4</p>
           </div>
         </div>
-        
+
         <div className="flex gap-1 px-4 pb-4">
           {[1, 2, 3, 4].map(s => (
             <div
@@ -198,7 +198,7 @@ export default function NewSessionPage() {
           ))}
         </div>
       </div>
-      
+
       <div className="p-4">
         {/* Step 1: Details */}
         {step === 1 && (
@@ -211,23 +211,22 @@ export default function NewSessionPage() {
             </div>
           </Card>
         )}
-        
+
         {/* Step 2: Select Host */}
         {step === 2 && (
           <Card>
             <CardTitle>Who&apos;s Hosting?</CardTitle>
             <p className="text-sm text-[#6b7280] mb-4">The host is who paid/booked the court</p>
-            
+
             <div className="space-y-2">
               {members.map((m) => (
                 <button
                   key={m.id}
                   onClick={() => setHostId(m.id)}
-                  className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
-                    hostId === m.id
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${hostId === m.id
                       ? 'bg-blue-500/10 ring-2 ring-blue-500'
                       : 'bg-[#252c3d] hover:bg-[#2d3548]'
-                  }`}
+                    }`}
                 >
                   <Avatar src={m.avatar_url} name={m.name} size="md" />
                   <span className="flex-1 text-left font-medium text-white">{m.name}</span>
@@ -237,7 +236,7 @@ export default function NewSessionPage() {
             </div>
           </Card>
         )}
-        
+
         {/* Step 3: Select Players */}
         {step === 3 && (
           <Card>
@@ -245,17 +244,16 @@ export default function NewSessionPage() {
               <CardTitle>Select Players</CardTitle>
               <span className="text-sm text-[#6b7280]">{selectedPlayers.length} selected</span>
             </div>
-            
+
             <div className="space-y-2">
               {members.map((m) => (
                 <button
                   key={m.id}
                   onClick={() => togglePlayer(m.id)}
-                  className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
-                    selectedPlayers.includes(m.id)
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${selectedPlayers.includes(m.id)
                       ? 'bg-[#ff6b35]/10 ring-2 ring-[#ff6b35]'
                       : 'bg-[#252c3d] hover:bg-[#2d3548]'
-                  }`}
+                    }`}
                 >
                   <Avatar src={m.avatar_url} name={m.name} size="md" />
                   <span className="flex-1 text-left font-medium text-white">{m.name}</span>
@@ -266,7 +264,7 @@ export default function NewSessionPage() {
             </div>
           </Card>
         )}
-        
+
         {/* Step 4: Assign Teams */}
         {step === 4 && (
           <div className="space-y-4">
@@ -286,7 +284,7 @@ export default function NewSessionPage() {
                 </div>
               </Card>
             )}
-            
+
             {teams.map((team) => (
               <Card key={team.id}>
                 <div className="flex items-center gap-2 mb-3">
@@ -294,20 +292,19 @@ export default function NewSessionPage() {
                     <button
                       key={c.value}
                       onClick={() => updateTeamColor(team.id, c.value)}
-                      className={`w-6 h-6 rounded-full transition-transform ${
-                        team.color === c.value ? 'scale-125 ring-2 ring-offset-2 ring-offset-[#1e2433] ring-[#6b7280]' : ''
-                      }`}
+                      className={`w-6 h-6 rounded-full transition-transform ${team.color === c.value ? 'scale-125 ring-2 ring-offset-2 ring-offset-[#1e2433] ring-[#6b7280]' : ''
+                        }`}
                       style={{ backgroundColor: c.hex }}
                     />
                   ))}
                 </div>
-                
+
                 <Input
                   value={team.name}
                   onChange={(e) => updateTeamName(team.id, e.target.value)}
                   className="mb-3 font-semibold"
                 />
-                
+
                 <div className="space-y-2">
                   {team.players.map(playerId => {
                     const m = getMember(playerId)
@@ -318,11 +315,10 @@ export default function NewSessionPage() {
                         {playerId === hostId && <span className="w-4 h-4 bg-blue-500/30 rounded flex items-center justify-center text-[8px] font-bold text-blue-400">H</span>}
                         <button
                           onClick={() => toggleCaptain(team.id, playerId)}
-                          className={`p-1.5 rounded-lg transition-colors ${
-                            team.captainId === playerId
+                          className={`p-1.5 rounded-lg transition-colors ${team.captainId === playerId
                               ? 'bg-yellow-500/20 text-yellow-400'
                               : 'text-[#6b7280] hover:text-yellow-400 hover:bg-yellow-500/10'
-                          }`}
+                            }`}
                         >
                           <span className="w-4 h-4 bg-yellow-500/30 rounded flex items-center justify-center text-[8px] font-bold text-yellow-400">C</span>
                         </button>
@@ -336,7 +332,7 @@ export default function NewSessionPage() {
                     )
                   })}
                 </div>
-                
+
                 {unassignedPlayers.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-2">
                     {unassignedPlayers.map(playerId => {
@@ -359,7 +355,7 @@ export default function NewSessionPage() {
           </div>
         )}
       </div>
-      
+
       {/* Bottom Actions */}
       <div className="fixed bottom-0 left-0 right-0 bg-[#1a1f2e] border-t border-[#2a3142] p-4 safe-bottom">
         <div className="flex gap-3 max-w-lg mx-auto">
@@ -368,7 +364,7 @@ export default function NewSessionPage() {
               Back
             </Button>
           )}
-          
+
           {step < 4 ? (
             <Button
               onClick={() => setStep(step + 1)}

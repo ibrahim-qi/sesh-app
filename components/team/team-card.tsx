@@ -24,17 +24,17 @@ interface TeamCardProps {
 }
 
 const teamColors: Record<string, { bg: string; border: string; text: string; glow?: string }> = {
-  red: { bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-400', glow: 'shadow-red-500/20' },
-  blue: { bg: 'bg-blue-500/10', border: 'border-blue-500/30', text: 'text-blue-400', glow: 'shadow-blue-500/20' },
-  green: { bg: 'bg-green-500/10', border: 'border-green-500/30', text: 'text-green-400', glow: 'shadow-green-500/20' },
-  purple: { bg: 'bg-purple-500/10', border: 'border-purple-500/30', text: 'text-purple-400', glow: 'shadow-purple-500/20' },
-  yellow: { bg: 'bg-yellow-500/10', border: 'border-yellow-500/30', text: 'text-yellow-400', glow: 'shadow-yellow-500/20' },
+  red: { bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-300', glow: 'shadow-red-500/20' },
+  blue: { bg: 'bg-blue-500/10', border: 'border-blue-500/30', text: 'text-blue-300', glow: 'shadow-blue-500/20' },
+  green: { bg: 'bg-green-500/10', border: 'border-green-500/30', text: 'text-green-300', glow: 'shadow-green-500/20' },
+  purple: { bg: 'bg-purple-500/10', border: 'border-purple-500/30', text: 'text-purple-300', glow: 'shadow-purple-500/20' },
+  yellow: { bg: 'bg-yellow-500/10', border: 'border-yellow-500/30', text: 'text-yellow-300', glow: 'shadow-yellow-500/20' },
   white: { bg: 'bg-[#252c3d]', border: 'border-[#363d4f]', text: 'text-[#a1a7b4]' },
 }
 
 export function TeamCard({ team, isYourTeam, score, isWinner, className }: TeamCardProps) {
   const colors = teamColors[team.color] || teamColors.white
-  
+
   return (
     <div
       className={cn(
@@ -60,7 +60,7 @@ export function TeamCard({ team, isYourTeam, score, isWinner, className }: TeamC
           <span className="text-xl font-bold text-white">{score}</span>
         )}
       </div>
-      
+
       <div className="flex flex-wrap gap-2">
         {team.players.map((player) => (
           <div key={player.member.id} className="flex items-center gap-1.5">

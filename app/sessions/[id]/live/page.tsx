@@ -381,59 +381,58 @@ export default function LiveScoringPage() {
           <Undo2 size={24} />
         </button>
       </div>
-    </div>
 
-      {/* Timer Display */ }
-  {
-    !showTimerSetup && (
-      <div className="relative z-10 py-4">
-        <div className="flex flex-col items-center">
-          {gameMode === 'timer' ? (
-            <>
-              <div className="text-5xl font-mono font-bold tracking-wider text-white">
-                {formatTime(timeLeft)}
-              </div>
-              <div className="flex items-center gap-3 mt-3">
-                {isTimerRunning ? (
-                  <button
-                    onClick={pauseTimer}
-                    className="p-3 bg-[#252c3d] hover:bg-[#2d3548] rounded-full transition-colors"
-                  >
-                    <Pause size={20} className="text-[#ff6b35]" />
-                  </button>
-                ) : (
-                  <button
-                    onClick={resumeTimer}
-                    className="p-3 bg-[#ff6b35] hover:bg-[#ff5722] rounded-full transition-colors"
-                  >
-                    <Play size={20} className="text-white" />
-                  </button>
-                )}
-                <button
-                  onClick={resetTimer}
-                  className="p-3 bg-[#252c3d] hover:bg-[#2d3548] rounded-full transition-colors"
-                >
-                  <RotateCcw size={20} className="text-[#6b7280]" />
-                </button>
-                <button
-                  onClick={() => setTimeLeft(prev => prev + 60)}
-                  className="px-3 py-2 bg-[#252c3d] hover:bg-[#2d3548] rounded-xl transition-colors flex items-center gap-1"
-                >
-                  <Plus size={16} className="text-[#6b7280]" />
-                  <span className="text-sm text-[#6b7280]">1:00</span>
-                </button>
-              </div>
-            </>
-          ) : (
-            <div className="flex flex-col items-center gap-1 animate-slide-up">
-              <span className="text-[#6b7280] text-sm uppercase tracking-widest font-semibold">First to</span>
-              <span className="text-5xl font-bold text-white shadow-glow-sm">{targetScore}</span>
+      {/* Timer Display */}
+      {
+        !showTimerSetup && (
+          <div className="relative z-10 py-4">
+            <div className="flex flex-col items-center">
+              {gameMode === 'timer' ? (
+                <>
+                  <div className="text-5xl font-mono font-bold tracking-wider text-white">
+                    {formatTime(timeLeft)}
+                  </div>
+                  <div className="flex items-center gap-3 mt-3">
+                    {isTimerRunning ? (
+                      <button
+                        onClick={pauseTimer}
+                        className="p-3 bg-[#252c3d] hover:bg-[#2d3548] rounded-full transition-colors"
+                      >
+                        <Pause size={20} className="text-[#ff6b35]" />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={resumeTimer}
+                        className="p-3 bg-[#ff6b35] hover:bg-[#ff5722] rounded-full transition-colors"
+                      >
+                        <Play size={20} className="text-white" />
+                      </button>
+                    )}
+                    <button
+                      onClick={resetTimer}
+                      className="p-3 bg-[#252c3d] hover:bg-[#2d3548] rounded-full transition-colors"
+                    >
+                      <RotateCcw size={20} className="text-[#6b7280]" />
+                    </button>
+                    <button
+                      onClick={() => setTimeLeft(prev => prev + 60)}
+                      className="px-3 py-2 bg-[#252c3d] hover:bg-[#2d3548] rounded-xl transition-colors flex items-center gap-1"
+                    >
+                      <Plus size={16} className="text-[#6b7280]" />
+                      <span className="text-sm text-[#6b7280]">1:00</span>
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col items-center gap-1 animate-slide-up">
+                  <span className="text-[#6b7280] text-sm uppercase tracking-widest font-semibold">First to</span>
+                  <span className="text-5xl font-bold text-white shadow-glow-sm">{targetScore}</span>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      </div>
-    )
-  }
+          </div>
+        )
+      }
 
       <div className="py-6 text-center relative z-10">
         {streak && streak.count >= 2 && (
@@ -518,128 +517,128 @@ export default function LiveScoringPage() {
 
 
 
-  {/* Timer Setup Modal */ }
-  {
-    showTimerSetup && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-        <div className="card-gradient border border-[#2a3142] rounded-3xl p-6 max-w-sm mx-4 w-full animate-score-pop">
-          <h2 className="text-xl font-bold text-white text-center mb-6">Game Setup</h2>
+      {/* Timer Setup Modal */}
+      {
+        showTimerSetup && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+            <div className="card-gradient border border-[#2a3142] rounded-3xl p-6 max-w-sm mx-4 w-full animate-score-pop">
+              <h2 className="text-xl font-bold text-white text-center mb-6">Game Setup</h2>
 
-          {/* Mode Switcher */}
-          <div className="flex bg-[#252c3d] p-1 rounded-xl mb-6">
-            <button
-              onClick={() => setGameMode('score')}
-              className={`flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-all ${gameMode === 'score' ? 'bg-[#ff6b35] text-white shadow-lg' : 'text-[#6b7280]'
-                }`}
-            >
-              Score Limit
-            </button>
-            <button
-              onClick={() => setGameMode('timer')}
-              className={`flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-all ${gameMode === 'timer' ? 'bg-[#ff6b35] text-white shadow-lg' : 'text-[#6b7280]'
-                }`}
-            >
-              Time Limit
-            </button>
+              {/* Mode Switcher */}
+              <div className="flex bg-[#252c3d] p-1 rounded-xl mb-6">
+                <button
+                  onClick={() => setGameMode('score')}
+                  className={`flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-all ${gameMode === 'score' ? 'bg-[#ff6b35] text-white shadow-lg' : 'text-[#6b7280]'
+                    }`}
+                >
+                  Score Limit
+                </button>
+                <button
+                  onClick={() => setGameMode('timer')}
+                  className={`flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-all ${gameMode === 'timer' ? 'bg-[#ff6b35] text-white shadow-lg' : 'text-[#6b7280]'
+                    }`}
+                >
+                  Time Limit
+                </button>
+              </div>
+
+              {gameMode === 'score' ? (
+                <div className="space-y-4 mb-6">
+                  <p className="text-sm text-[#6b7280] text-center">First team to reach...</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[5, 7, 11, 21].map((score) => (
+                      <button
+                        key={score}
+                        onClick={() => setTargetScore(score)}
+                        className={`p-4 rounded-xl border-2 transition-all ${targetScore === score
+                          ? 'border-[#ff6b35] bg-[#ff6b35]/10'
+                          : 'border-[#2a3142] bg-[#252c3d] hover:border-[#363d4f]'
+                          }`}
+                      >
+                        <span className={`text-2xl font-bold ${targetScore === score ? 'text-[#ff6b35]' : 'text-white'}`}>
+                          {score}
+                        </span>
+                        <span className="text-xs ml-1 text-[#6b7280]">pts</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4 mb-6">
+                  <p className="text-sm text-[#6b7280] text-center">Game duration...</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {GAME_DURATIONS.map(({ label, seconds }) => (
+                      <button
+                        key={seconds}
+                        onClick={() => { setGameDuration(seconds); setTimeLeft(seconds) }}
+                        className={`p-4 rounded-xl border-2 transition-all ${gameDuration === seconds
+                          ? 'border-[#ff6b35] bg-[#ff6b35]/10'
+                          : 'border-[#2a3142] bg-[#252c3d] hover:border-[#363d4f]'
+                          }`}
+                      >
+                        <span className={`text-lg font-bold ${gameDuration === seconds ? 'text-[#ff6b35]' : 'text-white'}`}>
+                          {label}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <Button onClick={startTimer} className="w-full shadow-glow" size="lg">
+                <Play size={20} className="mr-2" />
+                Start Game
+              </Button>
+            </div>
           </div>
+        )
+      }
 
-          {gameMode === 'score' ? (
-            <div className="space-y-4 mb-6">
-              <p className="text-sm text-[#6b7280] text-center">First team to reach...</p>
-              <div className="grid grid-cols-2 gap-3">
-                {[5, 7, 11, 21].map((score) => (
-                  <button
-                    key={score}
-                    onClick={() => setTargetScore(score)}
-                    className={`p-4 rounded-xl border-2 transition-all ${targetScore === score
-                        ? 'border-[#ff6b35] bg-[#ff6b35]/10'
-                        : 'border-[#2a3142] bg-[#252c3d] hover:border-[#363d4f]'
-                      }`}
-                  >
-                    <span className={`text-2xl font-bold ${targetScore === score ? 'text-[#ff6b35]' : 'text-white'}`}>
-                      {score}
-                    </span>
-                    <span className="text-xs ml-1 text-[#6b7280]">pts</span>
-                  </button>
-                ))}
+      {/* Tie / Overtime Modal */}
+      {
+        showTieModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+            <div className="card-gradient border border-[#2a3142] rounded-3xl p-6 max-w-sm mx-4 w-full animate-score-pop">
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-[#ff6b35]/20 rounded-2xl flex items-center justify-center mb-2">
+                  <span className="text-3xl font-bold text-[#ff6b35]">TIE</span>
+                </div>
+                <h2 className="text-2xl font-bold text-white mt-4">It&apos;s a Tie!</h2>
+                <p className="text-4xl font-mono font-bold text-[#ff6b35] my-4">
+                  {currentGame.team1_score} - {currentGame.team2_score}
+                </p>
+                <p className="text-[#6b7280]">Add overtime to break the tie</p>
+              </div>
+
+              <div className="space-y-3">
+                <Button onClick={() => addOvertime(60)} className="w-full" size="lg">
+                  +1 Minute Overtime
+                </Button>
+                <Button onClick={() => addOvertime(120)} variant="secondary" className="w-full" size="lg">
+                  +2 Minutes Overtime
+                </Button>
               </div>
             </div>
-          ) : (
-            <div className="space-y-4 mb-6">
-              <p className="text-sm text-[#6b7280] text-center">Game duration...</p>
-              <div className="grid grid-cols-2 gap-3">
-                {GAME_DURATIONS.map(({ label, seconds }) => (
-                  <button
-                    key={seconds}
-                    onClick={() => { setGameDuration(seconds); setTimeLeft(seconds) }}
-                    className={`p-4 rounded-xl border-2 transition-all ${gameDuration === seconds
-                        ? 'border-[#ff6b35] bg-[#ff6b35]/10'
-                        : 'border-[#2a3142] bg-[#252c3d] hover:border-[#363d4f]'
-                      }`}
-                  >
-                    <span className={`text-lg font-bold ${gameDuration === seconds ? 'text-[#ff6b35]' : 'text-white'}`}>
-                      {label}
-                    </span>
-                  </button>
-                ))}
+          </div>
+        )
+      }
+
+      {/* Winner Modal */}
+      {
+        showGameEndModal && winner && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+            <div className="card-gradient border border-[#2a3142] rounded-3xl p-8 max-w-sm mx-4 text-center animate-score-pop">
+              <div className="w-24 h-24 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg animate-float" style={{ boxShadow: '0 0 40px rgba(234, 179, 8, 0.4)' }}>
+                <Trophy size={44} className="text-[#0f1219]" />
               </div>
+              <h2 className="text-3xl font-bold text-white mb-2">{winner.name}</h2>
+              <p className="text-lg text-[#6b7280] mb-2">wins!</p>
+              <p className="text-4xl font-mono font-bold text-white mb-8">{currentGame.team1_score} - {currentGame.team2_score}</p>
+              <Button onClick={handleEndGame} className="w-full shadow-glow" size="lg">Continue</Button>
             </div>
-          )}
-
-          <Button onClick={startTimer} className="w-full shadow-glow" size="lg">
-            <Play size={20} className="mr-2" />
-            Start Game
-          </Button>
-        </div>
-      </div>
-    )
-  }
-
-  {/* Tie / Overtime Modal */ }
-  {
-    showTieModal && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-        <div className="card-gradient border border-[#2a3142] rounded-3xl p-6 max-w-sm mx-4 w-full animate-score-pop">
-          <div className="text-center mb-6">
-            <div className="w-16 h-16 bg-[#ff6b35]/20 rounded-2xl flex items-center justify-center mb-2">
-              <span className="text-3xl font-bold text-[#ff6b35]">TIE</span>
-            </div>
-            <h2 className="text-2xl font-bold text-white mt-4">It&apos;s a Tie!</h2>
-            <p className="text-4xl font-mono font-bold text-[#ff6b35] my-4">
-              {currentGame.team1_score} - {currentGame.team2_score}
-            </p>
-            <p className="text-[#6b7280]">Add overtime to break the tie</p>
           </div>
-
-          <div className="space-y-3">
-            <Button onClick={() => addOvertime(60)} className="w-full" size="lg">
-              +1 Minute Overtime
-            </Button>
-            <Button onClick={() => addOvertime(120)} variant="secondary" className="w-full" size="lg">
-              +2 Minutes Overtime
-            </Button>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  {/* Winner Modal */ }
-  {
-    showGameEndModal && winner && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-        <div className="card-gradient border border-[#2a3142] rounded-3xl p-8 max-w-sm mx-4 text-center animate-score-pop">
-          <div className="w-24 h-24 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg animate-float" style={{ boxShadow: '0 0 40px rgba(234, 179, 8, 0.4)' }}>
-            <Trophy size={44} className="text-[#0f1219]" />
-          </div>
-          <h2 className="text-3xl font-bold text-white mb-2">{winner.name}</h2>
-          <p className="text-lg text-[#6b7280] mb-2">wins!</p>
-          <p className="text-4xl font-mono font-bold text-white mb-8">{currentGame.team1_score} - {currentGame.team2_score}</p>
-          <Button onClick={handleEndGame} className="w-full shadow-glow" size="lg">Continue</Button>
-        </div>
-      </div>
-    )
-  }
+        )
+      }
     </div >
   )
 }

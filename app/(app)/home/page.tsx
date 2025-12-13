@@ -156,25 +156,23 @@ export default function HomePage() {
           <div className="flex gap-3">
             {isAdmin && (
               <Link href="/admin/roster" className="flex-1">
-                <Card hover className="flex items-center gap-3 p-4">
-                  <div className="w-11 h-11 bg-[#ff6b35]/20 rounded-2xl flex items-center justify-center">
-                    <Users size={22} className="text-[#ff6b35]" />
+                <Card hover className="flex flex-col items-center justify-center gap-2 p-4 h-full aspect-square sm:aspect-auto sm:h-auto">
+                  <div className="w-10 h-10 bg-[#ff6b35]/10 rounded-xl flex items-center justify-center mb-1">
+                    <Users size={20} className="text-[#ff6b35]" />
                   </div>
-                  <div>
-                    <p className="font-semibold text-white">Roster</p>
-                    <p className="text-xs text-[#6b7280]">Manage players</p>
+                  <div className="text-center">
+                    <p className="font-semibold text-white text-sm">Roster</p>
                   </div>
                 </Card>
               </Link>
             )}
             <Link href="/sessions" className="flex-1">
-              <Card hover className="flex items-center gap-3 p-4">
-                <div className="w-11 h-11 bg-blue-500/20 rounded-2xl flex items-center justify-center">
-                  <Calendar size={22} className="text-blue-400" />
+              <Card hover className="flex flex-col items-center justify-center gap-2 p-4 h-full aspect-square sm:aspect-auto sm:h-auto">
+                <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center mb-1">
+                  <Calendar size={20} className="text-blue-400" />
                 </div>
-                <div>
-                  <p className="font-semibold text-white">Sessions</p>
-                  <p className="text-xs text-[#6b7280]">{isAdmin ? 'Create & manage' : 'Manage'}</p>
+                <div className="text-center">
+                  <p className="font-semibold text-white text-sm">Sessions</p>
                 </div>
               </Card>
             </Link>
@@ -183,55 +181,60 @@ export default function HomePage() {
 
         {/* Upcoming Session */}
         {upcomingSession ? (
-          <Card gradient>
-            <div className="flex items-center justify-between mb-4">
-              <CardTitle>
+          <Card gradient className="relative overflow-hidden group">
+            <div className="flex flex-col items-center text-center p-2">
+              <div className="mb-4">
                 {upcomingSession.status === 'live' ? (
-                  <span className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold uppercase tracking-wider animate-pulse-live">
+                    <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
                     Live Now
                   </span>
                 ) : (
-                  <span className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-blue-400 rounded-full" />
-                    Next Up
+                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold uppercase tracking-wider">
+                    Next Session
                   </span>
                 )}
-              </CardTitle>
-              {canManageSession && upcomingSession.status === 'upcoming' && (
-                <Link href={`/sessions/${upcomingSession.id}/live`}>
-                  <Button size="sm">
-                    <Play size={16} className="mr-1" />
-                    Start
-                  </Button>
-                </Link>
-              )}
-              {upcomingSession.status === 'live' && (
-                <Link href={canManageSession ? `/sessions/${upcomingSession.id}/live` : `/session/${upcomingSession.id}`}>
-                  <Button size="sm">
-                    {canManageSession ? 'Score' : 'Watch'}
-                  </Button>
-                </Link>
-              )}
-            </div>
-
-            <p className="text-lg font-semibold text-white">
-              {formatDate(upcomingSession.date)}
-            </p>
-            <p className="text-sm text-[#6b7280] mb-3">
-              {formatTime(upcomingSession.date)} • {upcomingSession.location}
-            </p>
-
-            {/* Session Host */}
-            {sessionHost && (
-              <div className="flex items-center gap-2 mb-4 p-2.5 bg-blue-500/10 border border-blue-500/20 rounded-xl">
-                <span className="w-5 h-5 bg-blue-500/30 rounded flex items-center justify-center text-[10px] font-bold text-blue-400">H</span>
-                <Avatar src={sessionHost.avatar_url} name={sessionHost.name} size="sm" />
-                <span className="text-sm text-blue-400">
-                  Hosted by <span className="font-medium">{sessionHost.name}</span>
-                </span>
               </div>
-            )}
+
+              <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">
+                {formatDate(upcomingSession.date)}
+              </h2>
+              <div className="flex items-center gap-2 text-[#a1a7b4] text-sm mb-6">
+                <span className="bg-[#252c3d] px-2 py-0.5 rounded text-xs font-mono">{formatTime(upcomingSession.date)}</span>
+                <span className="text-[#6b7280]">•</span>
+                <span>{upcomingSession.location}</span>
+              </div>
+
+              {/* Session Host Pill */}
+              {sessionHost && (
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#252c3d]/50 rounded-full mb-6 border border-[#ffffff]/5">
+                  <Avatar src={sessionHost.avatar_url} name={sessionHost.name} size="xs" />
+                  <span className="text-xs text-[#a1a7b4]">
+                    Prefix by <span className="text-white">{sessionHost.name?.split(' ')[0]}</span>
+                  </span>
+                </div>
+              )}
+
+              {/* Primary Action Button */}
+              <div className="w-full">
+                {upcomingSession.status === 'live' && (
+                  <Link href={canManageSession ? `/sessions/${upcomingSession.id}/live` : `/session/${upcomingSession.id}`} className="block w-full">
+                    <Button className="w-full h-12 text-base shadow-glow hover:shadow-glow-lg">
+                      <Play size={18} className="mr-2 fill-current" />
+                      {canManageSession ? 'Resume Session' : 'Watch Live'}
+                    </Button>
+                  </Link>
+                )}
+                {canManageSession && upcomingSession.status === 'upcoming' && (
+                  <Link href={`/sessions/${upcomingSession.id}/live`} className="block w-full">
+                    <Button className="w-full h-12 text-base shadow-glow hover:shadow-glow-lg">
+                      <Play size={18} className="mr-2 fill-current" />
+                      Start Session
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            </div>
 
             {userTeam && (
               <div className="mb-4">
@@ -256,26 +259,35 @@ export default function HomePage() {
             )}
           </Card>
         ) : (
-          <Card className="relative overflow-hidden min-h-[160px] flex flex-col items-center justify-center p-6 text-center group">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#252c3d]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-[#2a3142] to-transparent" />
-
-            <div className="w-16 h-16 bg-[#252c3d] rounded-2xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-105 transition-transform duration-300">
-              <Calendar size={32} className="text-[#6b7280]" />
+          <div className="flex flex-col items-center justify-center py-12 relative">
+            {/* Animated basketball from landing page */}
+            <div className="relative w-16 h-16 animate-float mb-6">
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#252c3d] to-[#1a1f2e] border border-[#363d4f]"
+                style={{ boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.05)' }}>
+                <svg viewBox="0 0 44 44" className="w-full h-full">
+                  <path d="M5 22 Q22 20, 39 22" stroke="#ff6b35" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.6" />
+                  <path d="M22 5 Q20 22, 22 39" stroke="#ff6b35" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.6" />
+                  <path d="M10 10 Q14 22, 10 34" stroke="#ff6b35" strokeWidth="1" fill="none" strokeLinecap="round" opacity="0.3" />
+                  <path d="M34 10 Q30 22, 34 34" stroke="#ff6b35" strokeWidth="1" fill="none" strokeLinecap="round" opacity="0.3" />
+                </svg>
+              </div>
+              <div className="absolute top-1.5 left-3 w-4 h-2 bg-white/5 rounded-full blur-[1px]" />
             </div>
 
-            <p className="text-[#9ca3af] font-medium mb-1">No upcoming session</p>
-            <p className="text-sm text-[#6b7280] mb-5">Rest up for the next one</p>
+            <p className="text-lg font-medium text-white mb-2">No active sessions</p>
+            <p className="text-sm text-[#6b7280] mb-8 text-center max-w-[200px]">
+              The court is quiet. Time to make some noise?
+            </p>
 
             {canManage && (
               <Link href="/sessions/new">
-                <Button className="shadow-lg hover:shadow-glow-sm transition-all">
-                  <Plus size={18} className="mr-2" />
+                <Button className="h-12 px-8 shadow-glow hover:shadow-glow-lg transition-all text-base">
+                  <Plus size={20} className="mr-2" />
                   Create Session
                 </Button>
               </Link>
             )}
-          </Card>
+          </div>
         )}
 
         {/* Your Stats */}

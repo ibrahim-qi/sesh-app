@@ -1,26 +1,19 @@
 'use client'
 
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Avatar } from '@/components/ui/avatar'
-import { ArrowLeft, Undo2, Trophy, Play, Pause, RotateCcw, Plus } from 'lucide-react'
+import { ArrowLeft, Undo2, Trophy } from 'lucide-react'
 import Link from 'next/link'
 import { getTeamColorHex } from '@/lib/types'
 import { supabase } from '@/lib/supabase/client'
-
-const GAME_DURATIONS = [
-  { label: '10 sec', seconds: 10 },  // For testing - remove in production
-  { label: '3 min', seconds: 180 },
-  { label: '4 min', seconds: 240 },
-  { label: '5 min', seconds: 300 },
-]
 
 export default function LiveScoringPage() {
   const router = useRouter()
   const params = useParams()
   const sessionId = params.id as string
-
+  
   const [member, setMember] = useState<any>(null)
   const [session, setSession] = useState<any>(null)
   const [teams, setTeams] = useState<any[]>([])
@@ -28,99 +21,17 @@ export default function LiveScoringPage() {
   const [scores, setScores] = useState<any[]>([])
   const [streak, setStreak] = useState<{ teamId: string; count: number } | null>(null)
   const [showGameEndModal, setShowGameEndModal] = useState(false)
-  const [showTieModal, setShowTieModal] = useState(false)
   const [winner, setWinner] = useState<any>(null)
   const [scoreAnimation, setScoreAnimation] = useState<string | null>(null)
-
-  // Timer state
-  const [gameMode, setGameMode] = useState<'timer' | 'score'>('score')
-  const [gameDuration, setGameDuration] = useState(300)
-  const [targetScore, setTargetScore] = useState(5)
-  const [timeLeft, setTimeLeft] = useState(300)
-  const [isTimerRunning, setIsTimerRunning] = useState(false)
-  const [showTimerSetup, setShowTimerSetup] = useState(true)
-  const [timerEnded, setTimerEnded] = useState(false)
-  const timerRef = useRef<NodeJS.Timeout | null>(null)
-
+  
+  const TARGET_SCORE = 5
+  
   useEffect(() => {
     const memberData = JSON.parse(localStorage.getItem('hoops_member') || '{}')
     setMember(memberData)
     loadData()
   }, [sessionId])
-
-  // Timer effect
-  useEffect(() => {
-    if (isTimerRunning && timeLeft > 0) {
-      timerRef.current = setInterval(() => {
-        setTimeLeft(prev => {
-          if (prev <= 1) {
-            setIsTimerRunning(false)
-            setTimerEnded(true) // Signal that timer ended
-            return 0
-          }
-          return prev - 1
-        })
-      }, 1000)
-    }
-
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
-    }
-  }, [isTimerRunning])
-
-  // Handle timer end with fresh state
-  useEffect(() => {
-    if (timerEnded && currentGame) {
-      setTimerEnded(false)
-
-      // Vibrate to alert
-      if (navigator.vibrate) navigator.vibrate([200, 100, 200])
-
-      const team1Score = currentGame.team1_score
-      const team2Score = currentGame.team2_score
-
-      if (team1Score === team2Score) {
-        // It's a tie - show overtime modal
-        setShowTieModal(true)
-      } else {
-        // We have a winner
-        const winnerTeamId = team1Score > team2Score ? currentGame.team1_id : currentGame.team2_id
-        setWinner(teams.find(t => t.id === winnerTeamId))
-        setShowGameEndModal(true)
-      }
-    }
-  }, [timerEnded, currentGame, teams])
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins}:${secs.toString().padStart(2, '0')}`
-  }
-
-  const startTimer = () => {
-    setShowTimerSetup(false)
-    setIsTimerRunning(true)
-  }
-
-  const pauseTimer = () => {
-    setIsTimerRunning(false)
-  }
-
-  const resumeTimer = () => {
-    setIsTimerRunning(true)
-  }
-
-  const resetTimer = () => {
-    setIsTimerRunning(false)
-    setTimeLeft(gameDuration)
-  }
-
-  const addOvertime = (extraSeconds: number) => {
-    setShowTieModal(false)
-    setTimeLeft(extraSeconds)
-    setIsTimerRunning(true)
-  }
-
+  
   const canManage = () => {
     if (!member || !session) return false
     if (member.role === 'admin') return true
@@ -128,31 +39,31 @@ export default function LiveScoringPage() {
     if (session.created_by === member.id) return true
     return false
   }
-
+  
   const loadData = async () => {
     const { data: sessionData } = await supabase
       .from('sessions')
       .select('*')
       .eq('id', sessionId)
       .single()
-
+    
     if (!sessionData) {
       router.push('/sessions')
       return
     }
-
+    
     if (sessionData.status === 'upcoming') {
       await supabase.from('sessions').update({ status: 'live' } as any).eq('id', sessionId)
       sessionData.status = 'live'
     }
-
+    
     setSession(sessionData)
-
+    
     const { data: teamsData } = await supabase
       .from('session_teams')
       .select(`*, session_team_players (*, group_members (*))`)
       .eq('session_id', sessionId)
-
+    
     const formattedTeams = (teamsData as any[] || []).map(team => ({
       ...team,
       players: team.session_team_players?.map((tp: any) => ({
@@ -160,16 +71,16 @@ export default function LiveScoringPage() {
         member: tp.group_members
       })) || []
     }))
-
+    
     setTeams(formattedTeams)
-
+    
     const { data: activeGame } = await supabase
       .from('games')
       .select('*')
       .eq('session_id', sessionId)
       .eq('status', 'in_progress')
       .single()
-
+    
     if (activeGame) {
       setCurrentGame(activeGame)
       const { data: scoresData } = await supabase
@@ -181,14 +92,14 @@ export default function LiveScoringPage() {
     } else if (formattedTeams.length >= 2) {
       createNewGame(formattedTeams[0].id, formattedTeams[1].id)
     }
-
+    
     const { data: completedGames } = await supabase
       .from('games')
       .select('*')
       .eq('session_id', sessionId)
       .eq('status', 'completed')
       .order('completed_at', { ascending: false })
-
+    
     if (completedGames && completedGames.length > 0) {
       let streakTeamId = completedGames[0].winner_team_id
       let streakCount = 0
@@ -199,7 +110,7 @@ export default function LiveScoringPage() {
       if (streakCount >= 2) setStreak({ teamId: streakTeamId, count: streakCount })
     }
   }
-
+  
   const createNewGame = async (team1Id: string, team2Id: string) => {
     const { data: newGame } = await supabase
       .from('games')
@@ -213,126 +124,110 @@ export default function LiveScoringPage() {
       } as any)
       .select()
       .single()
-
+    
     if (newGame) {
       setCurrentGame(newGame)
       setScores([])
-      // Reset timer for new game
-      setTimeLeft(gameDuration)
-      setIsTimerRunning(false)
-      setShowTimerSetup(true)
     }
   }
-
+  
   const handleScore = useCallback(async (memberId: string, points: 1 | 2 | 3, teamId: string) => {
     if (!currentGame) return
     if (navigator.vibrate) navigator.vibrate(50)
-
+    
     // Trigger score animation
     setScoreAnimation(teamId)
     setTimeout(() => setScoreAnimation(null), 300)
-
+    
     const { data: newScore } = await supabase
       .from('game_scores')
       .insert({ game_id: currentGame.id, group_member_id: memberId, team_id: teamId, points } as any)
       .select()
       .single()
-
+    
     if (!newScore) return
-
+    
     const isTeam1 = teamId === currentGame.team1_id
     const newTeam1Score = isTeam1 ? currentGame.team1_score + points : currentGame.team1_score
     const newTeam2Score = !isTeam1 ? currentGame.team2_score + points : currentGame.team2_score
-
+    
     await supabase.from('games').update({ team1_score: newTeam1Score, team2_score: newTeam2Score } as any).eq('id', currentGame.id)
-
+    
     setCurrentGame((prev: any) => ({ ...prev, team1_score: newTeam1Score, team2_score: newTeam2Score }))
     setScores(prev => [...prev, newScore])
-
-    // Only auto-end for target score mode
-    if (gameMode === 'score' && (newTeam1Score >= targetScore || newTeam2Score >= targetScore)) {
-      const winnerTeamId = newTeam1Score >= newTeam2Score ? currentGame.team1_id : currentGame.team2_id
+    
+    if (newTeam1Score >= TARGET_SCORE || newTeam2Score >= TARGET_SCORE) {
+      const winnerTeamId = newTeam1Score >= TARGET_SCORE ? currentGame.team1_id : currentGame.team2_id
       setWinner(teams.find(t => t.id === winnerTeamId))
       setShowGameEndModal(true)
     }
-  }, [currentGame, teams, gameMode, targetScore])
-
+  }, [currentGame, teams])
+  
   const handleUndo = useCallback(async () => {
     if (!currentGame || scores.length === 0) return
-
+    
     const lastScore = scores[scores.length - 1]
     await supabase.from('game_scores').delete().eq('id', lastScore.id)
-
+    
     const isTeam1 = lastScore.team_id === currentGame.team1_id
     const newTeam1Score = isTeam1 ? currentGame.team1_score - lastScore.points : currentGame.team1_score
     const newTeam2Score = !isTeam1 ? currentGame.team2_score - lastScore.points : currentGame.team2_score
-
+    
     await supabase.from('games').update({ team1_score: newTeam1Score, team2_score: newTeam2Score } as any).eq('id', currentGame.id)
-
+    
     setCurrentGame((prev: any) => ({ ...prev, team1_score: newTeam1Score, team2_score: newTeam2Score }))
     setScores(prev => prev.slice(0, -1))
   }, [currentGame, scores])
-
+  
   const handleEndGame = useCallback(async () => {
     if (!currentGame || !winner) return
-
-    setIsTimerRunning(false)
-
+    
     await supabase.from('games').update({
       status: 'completed',
       winner_team_id: winner.id,
       completed_at: new Date().toISOString(),
     } as any).eq('id', currentGame.id)
-
+    
     if (streak && streak.teamId === winner.id) {
       setStreak({ teamId: winner.id, count: streak.count + 1 })
     } else {
       setStreak({ teamId: winner.id, count: 1 })
     }
-
+    
     const waitingTeam = teams.find(t => t.id !== currentGame.team1_id && t.id !== currentGame.team2_id)
     if (waitingTeam) {
       await createNewGame(winner.id, waitingTeam.id)
     }
-
+    
     setShowGameEndModal(false)
     setWinner(null)
   }, [currentGame, winner, teams, streak])
-
+  
   const handleEndSession = async () => {
     if (!confirm('End this session?')) return
-
-    setIsTimerRunning(false)
-
+    
     await supabase.from('sessions').update({ status: 'completed' } as any).eq('id', sessionId)
-
+    
     if (currentGame?.status === 'in_progress') {
-      if (currentGame.team1_score === 0 && currentGame.team2_score === 0) {
-        await supabase.from('games').delete().eq('id', currentGame.id)
-      } else {
-        const isTie = currentGame.team1_score === currentGame.team2_score
-        const winnerId = isTie ? null : (currentGame.team1_score > currentGame.team2_score ? currentGame.team1_id : currentGame.team2_id)
-
-        await supabase.from('games').update({
-          status: 'completed',
-          winner_team_id: winnerId,
-          completed_at: new Date().toISOString(),
-        } as any).eq('id', currentGame.id)
-      }
+      await supabase.from('games').update({
+        status: 'completed',
+        winner_team_id: currentGame.team1_score > currentGame.team2_score ? currentGame.team1_id : currentGame.team2_id,
+        completed_at: new Date().toISOString(),
+      } as any).eq('id', currentGame.id)
     }
-
+    
     router.push('/sessions')
   }
-
+  
   const getPlayerPoints = (memberId: string) => scores.filter(s => s.group_member_id === memberId).reduce((sum, s) => sum + s.points, 0)
-
+  
   const getLastScoreText = () => {
     if (scores.length === 0) return null
     const last = scores[scores.length - 1]
     const player = teams.flatMap(t => t.players || []).find(p => p.group_member_id === last.group_member_id)
     return `+${last.points} ${player?.member?.name?.split(' ')[0]}`
   }
-
+  
   if (!session || !currentGame || teams.length < 2) {
     return (
       <div className="min-h-screen bg-[#0f1219] flex items-center justify-center">
@@ -340,103 +235,41 @@ export default function LiveScoringPage() {
       </div>
     )
   }
-
+  
   const team1 = teams.find(t => t.id === currentGame.team1_id)
   const team2 = teams.find(t => t.id === currentGame.team2_id)
   const waitingTeam = teams.find(t => t.id !== currentGame.team1_id && t.id !== currentGame.team2_id)
   const team1Color = getTeamColorHex(team1?.color || 'red')
   const team2Color = getTeamColorHex(team2?.color || 'blue')
-  const isLowTime = timeLeft <= 30 && timeLeft > 0
-
+  
   return (
     <div className="min-h-screen bg-[#0f1219] text-white pb-24 relative">
       {/* Ambient glow effects */}
-      <div
+      <div 
         className="absolute top-0 left-0 w-1/2 h-64 blur-3xl opacity-20 transition-opacity duration-500"
         style={{ backgroundColor: team1Color, opacity: scoreAnimation === currentGame.team1_id ? 0.4 : 0.15 }}
       />
-      <div
+      <div 
         className="absolute top-0 right-0 w-1/2 h-64 blur-3xl opacity-20 transition-opacity duration-500"
         style={{ backgroundColor: team2Color, opacity: scoreAnimation === currentGame.team2_id ? 0.4 : 0.15 }}
       />
-
+      
       <div className="bg-[#1a1f2e]/80 backdrop-blur-sm border-b border-[#2a3142] relative z-10">
         <div className="flex items-center justify-between p-4">
           <Link href={`/sessions/${sessionId}`} className="p-2 -ml-2 rounded-full hover:bg-[#252c3d]">
             <ArrowLeft size={24} className="text-[#6b7280]" />
           </Link>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+            <span className="text-sm font-medium tracking-wide">LIVE</span>
+          </div>
           <button onClick={handleEndSession} className="text-sm text-[#6b7280] hover:text-white transition-colors">End</button>
         </div>
-
-        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
-          <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-          <span className="text-sm font-medium tracking-wide">LIVE</span>
-        </div>
-
-        <button
-          onClick={handleUndo}
-          disabled={scores.length === 0}
-          className={`p-2 rounded-full transition-colors ${scores.length === 0 ? 'text-[#2a3142]' : 'text-[#6b7280] hover:bg-[#252c3d] hover:text-white'}`}
-        >
-          <Undo2 size={24} />
-        </button>
       </div>
-
-      {/* Timer Display */}
-      {
-        !showTimerSetup && (
-          <div className="relative z-10 py-4">
-            <div className="flex flex-col items-center">
-              {gameMode === 'timer' ? (
-                <>
-                  <div className="text-5xl font-mono font-bold tracking-wider text-white">
-                    {formatTime(timeLeft)}
-                  </div>
-                  <div className="flex items-center gap-3 mt-3">
-                    {isTimerRunning ? (
-                      <button
-                        onClick={pauseTimer}
-                        className="p-3 bg-[#252c3d] hover:bg-[#2d3548] rounded-full transition-colors"
-                      >
-                        <Pause size={20} className="text-[#ff6b35]" />
-                      </button>
-                    ) : (
-                      <button
-                        onClick={resumeTimer}
-                        className="p-3 bg-[#ff6b35] hover:bg-[#ff5722] rounded-full transition-colors"
-                      >
-                        <Play size={20} className="text-white" />
-                      </button>
-                    )}
-                    <button
-                      onClick={resetTimer}
-                      className="p-3 bg-[#252c3d] hover:bg-[#2d3548] rounded-full transition-colors"
-                    >
-                      <RotateCcw size={20} className="text-[#6b7280]" />
-                    </button>
-                    <button
-                      onClick={() => setTimeLeft(prev => prev + 60)}
-                      className="px-3 py-2 bg-[#252c3d] hover:bg-[#2d3548] rounded-xl transition-colors flex items-center gap-1"
-                    >
-                      <Plus size={16} className="text-[#6b7280]" />
-                      <span className="text-sm text-[#6b7280]">1:00</span>
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <div className="flex flex-col items-center gap-1 animate-slide-up">
-                  <span className="text-[#6b7280] text-sm uppercase tracking-widest font-semibold">First to</span>
-                  <span className="text-5xl font-bold text-white shadow-glow-sm">{targetScore}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        )
-      }
-
-      <div className="py-6 text-center relative z-10">
+      
+      <div className="py-10 text-center relative z-10">
         {streak && streak.count >= 2 && (
-          <div className="flex items-center justify-center gap-2 mb-4 animate-float">
+          <div className="flex items-center justify-center gap-2 mb-6 animate-float">
             <span className="text-xl animate-fire">🔥</span>
             <span className="text-sm font-medium text-yellow-400 tracking-wide">
               {teams.find(t => t.id === streak.teamId)?.name} • {streak.count} streak
@@ -444,27 +277,27 @@ export default function LiveScoringPage() {
             <span className="text-xl animate-fire">🔥</span>
           </div>
         )}
-
+        
         <div className="flex items-center justify-center gap-12">
           <div className="text-center">
             <div className="w-4 h-4 rounded-full mx-auto mb-3 shadow-lg" style={{ backgroundColor: team1Color, boxShadow: `0 0 20px ${team1Color}40` }} />
             <p className="text-sm font-medium text-[#6b7280] mb-2 tracking-wide uppercase">{team1?.name}</p>
-            <p
+            <p 
               className={`text-7xl font-bold score-big transition-transform duration-200 ${scoreAnimation === currentGame.team1_id ? 'scale-110' : ''}`}
               style={{ color: team1Color }}
             >
               {currentGame.team1_score}
             </p>
           </div>
-
+          
           <div className="flex flex-col items-center">
             <span className="text-2xl font-light text-[#363d4f]">vs</span>
           </div>
-
+          
           <div className="text-center">
             <div className="w-4 h-4 rounded-full mx-auto mb-3 shadow-lg" style={{ backgroundColor: team2Color, boxShadow: `0 0 20px ${team2Color}40` }} />
             <p className="text-sm font-medium text-[#6b7280] mb-2 tracking-wide uppercase">{team2?.name}</p>
-            <p
+            <p 
               className={`text-7xl font-bold score-big transition-transform duration-200 ${scoreAnimation === currentGame.team2_id ? 'scale-110' : ''}`}
               style={{ color: team2Color }}
             >
@@ -472,8 +305,10 @@ export default function LiveScoringPage() {
             </p>
           </div>
         </div>
+        
+        <p className="text-sm text-[#4b5563] mt-6 font-mono">First to {TARGET_SCORE}</p>
       </div>
-
+      
       <div className="px-4 space-y-6 relative z-10">
         {[team1, team2].map((team, idx) => {
           const color = idx === 0 ? team1Color : team2Color
@@ -504,7 +339,7 @@ export default function LiveScoringPage() {
             </div>
           )
         })}
-
+        
         {waitingTeam && (
           <div className="p-4 bg-[#1e2433]/50 border border-[#2a3142] border-dashed rounded-xl text-center">
             <p className="text-sm text-[#6b7280]">
@@ -514,131 +349,27 @@ export default function LiveScoringPage() {
           </div>
         )}
       </div>
-
-
-
-      {/* Timer Setup Modal */}
-      {
-        showTimerSetup && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-            <div className="card-gradient border border-[#2a3142] rounded-3xl p-6 max-w-sm mx-4 w-full animate-score-pop">
-              <h2 className="text-xl font-bold text-white text-center mb-6">Game Setup</h2>
-
-              {/* Mode Switcher */}
-              <div className="flex bg-[#252c3d] p-1 rounded-xl mb-6">
-                <button
-                  onClick={() => setGameMode('score')}
-                  className={`flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-all ${gameMode === 'score' ? 'bg-[#ff6b35] text-white shadow-lg' : 'text-[#6b7280]'
-                    }`}
-                >
-                  Score Limit
-                </button>
-                <button
-                  onClick={() => setGameMode('timer')}
-                  className={`flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-all ${gameMode === 'timer' ? 'bg-[#ff6b35] text-white shadow-lg' : 'text-[#6b7280]'
-                    }`}
-                >
-                  Time Limit
-                </button>
-              </div>
-
-              {gameMode === 'score' ? (
-                <div className="space-y-4 mb-6">
-                  <p className="text-sm text-[#6b7280] text-center">First team to reach...</p>
-                  <div className="grid grid-cols-2 gap-3">
-                    {[5, 7, 11, 21].map((score) => (
-                      <button
-                        key={score}
-                        onClick={() => setTargetScore(score)}
-                        className={`p-4 rounded-xl border-2 transition-all ${targetScore === score
-                          ? 'border-[#ff6b35] bg-[#ff6b35]/10'
-                          : 'border-[#2a3142] bg-[#252c3d] hover:border-[#363d4f]'
-                          }`}
-                      >
-                        <span className={`text-2xl font-bold ${targetScore === score ? 'text-[#ff6b35]' : 'text-white'}`}>
-                          {score}
-                        </span>
-                        <span className="text-xs ml-1 text-[#6b7280]">pts</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4 mb-6">
-                  <p className="text-sm text-[#6b7280] text-center">Game duration...</p>
-                  <div className="grid grid-cols-2 gap-3">
-                    {GAME_DURATIONS.map(({ label, seconds }) => (
-                      <button
-                        key={seconds}
-                        onClick={() => { setGameDuration(seconds); setTimeLeft(seconds) }}
-                        className={`p-4 rounded-xl border-2 transition-all ${gameDuration === seconds
-                          ? 'border-[#ff6b35] bg-[#ff6b35]/10'
-                          : 'border-[#2a3142] bg-[#252c3d] hover:border-[#363d4f]'
-                          }`}
-                      >
-                        <span className={`text-lg font-bold ${gameDuration === seconds ? 'text-[#ff6b35]' : 'text-white'}`}>
-                          {label}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <Button onClick={startTimer} className="w-full shadow-glow" size="lg">
-                <Play size={20} className="mr-2" />
-                Start Game
-              </Button>
+      
+      <div className="fixed bottom-0 left-0 right-0 bg-[#1a1f2e]/90 backdrop-blur-sm border-t border-[#2a3142] p-4 safe-bottom z-20">
+        <Button variant="secondary" onClick={handleUndo} disabled={scores.length === 0} className="w-full">
+          <Undo2 size={18} className="mr-2" />
+          {getLastScoreText() || 'Undo'}
+        </Button>
+      </div>
+      
+      {showGameEndModal && winner && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="card-gradient border border-[#2a3142] rounded-3xl p-8 max-w-sm mx-4 text-center animate-score-pop">
+            <div className="w-24 h-24 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg animate-float" style={{ boxShadow: '0 0 40px rgba(234, 179, 8, 0.4)' }}>
+              <Trophy size={44} className="text-[#0f1219]" />
             </div>
+            <h2 className="text-3xl font-bold text-white mb-2">{winner.name}</h2>
+            <p className="text-lg text-[#6b7280] mb-2">wins!</p>
+            <p className="text-4xl font-mono font-bold text-white mb-8">{currentGame.team1_score} - {currentGame.team2_score}</p>
+            <Button onClick={handleEndGame} className="w-full shadow-glow" size="lg">Continue</Button>
           </div>
-        )
-      }
-
-      {/* Tie / Overtime Modal */}
-      {
-        showTieModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-            <div className="card-gradient border border-[#2a3142] rounded-3xl p-6 max-w-sm mx-4 w-full animate-score-pop">
-              <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-[#ff6b35]/20 rounded-2xl flex items-center justify-center mb-2">
-                  <span className="text-3xl font-bold text-[#ff6b35]">TIE</span>
-                </div>
-                <h2 className="text-2xl font-bold text-white mt-4">It&apos;s a Tie!</h2>
-                <p className="text-4xl font-mono font-bold text-[#ff6b35] my-4">
-                  {currentGame.team1_score} - {currentGame.team2_score}
-                </p>
-                <p className="text-[#6b7280]">Add overtime to break the tie</p>
-              </div>
-
-              <div className="space-y-3">
-                <Button onClick={() => addOvertime(60)} className="w-full" size="lg">
-                  +1 Minute Overtime
-                </Button>
-                <Button onClick={() => addOvertime(120)} variant="secondary" className="w-full" size="lg">
-                  +2 Minutes Overtime
-                </Button>
-              </div>
-            </div>
-          </div>
-        )
-      }
-
-      {/* Winner Modal */}
-      {
-        showGameEndModal && winner && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-            <div className="card-gradient border border-[#2a3142] rounded-3xl p-8 max-w-sm mx-4 text-center animate-score-pop">
-              <div className="w-24 h-24 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg animate-float" style={{ boxShadow: '0 0 40px rgba(234, 179, 8, 0.4)' }}>
-                <Trophy size={44} className="text-[#0f1219]" />
-              </div>
-              <h2 className="text-3xl font-bold text-white mb-2">{winner.name}</h2>
-              <p className="text-lg text-[#6b7280] mb-2">wins!</p>
-              <p className="text-4xl font-mono font-bold text-white mb-8">{currentGame.team1_score} - {currentGame.team2_score}</p>
-              <Button onClick={handleEndGame} className="w-full shadow-glow" size="lg">Continue</Button>
-            </div>
-          </div>
-        )
-      }
-    </div >
+        </div>
+      )}
+    </div>
   )
 }

@@ -333,19 +333,8 @@ button:active, a:active {
   animation: scorePop 0.3s ease-out;
 }
 
-/* Page transitions - premium feel */
-@keyframes pageEnter {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes pageFade {
+/* Page transition */
+@keyframes fadeIn {
   from {
     opacity: 0;
   }
@@ -355,23 +344,9 @@ button:active, a:active {
 }
 
 .page-transition {
-  animation: pageEnter 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  animation: fadeIn 0.2s ease-out;
 }
 
-/* Smooth view transitions for navigation */
-@view-transition {
-  navigation: auto;
-}
-
-::view-transition-old(root) {
-  animation: 150ms ease-out both pageFade;
-}
-
-::view-transition-new(root) {
-  animation: 200ms ease-in both pageEnter;
-}
-
-/* Score button styles - dark theme */
 /* Score button styles - dark theme */
 .score-btn {
   @apply flex items-center justify-center rounded-xl font-semibold transition-all duration-150 active:scale-95;
@@ -389,7 +364,7 @@ button:active, a:active {
 }
 
 .score-btn-3 {
-  @apply bg-gradient-to-r from-[#ff6b35] to-[#ff5722] text-white hover:from-[#ff5722] hover:to-[#e64a19] shadow-glow-sm;
+  @apply bg-[#ff6b35] text-white hover:bg-[#ff5722];
 }
 
 /* Smooth state transitions */
@@ -417,15 +392,15 @@ button:active, a:active {
   @apply border-t border-[#2a3142];
 }
 
-/* iOS-style header - updated for global gradient */
+/* iOS-style header */
 .header-ios {
-  @apply sticky top-0 z-40 bg-[#0f1219]/60 backdrop-blur-xl border-b border-[#ffffff]/5;
+  @apply sticky top-0 z-40 bg-[#1a1f2e]/80 backdrop-blur-xl border-b border-[#2a3142]/50;
   padding-top: var(--safe-area-top);
 }
 
 /* Clickable list item */
 .list-item {
-  @apply flex items-center gap-3 p-3 rounded-xl transition-colors active:bg-[#ffffff]/5;
+  @apply flex items-center gap-3 p-3 rounded-xl transition-colors active:bg-[#252c3d];
   min-height: 52px;
 }
 
@@ -437,58 +412,3 @@ input[type="date"],
 input[type="time"] {
   font-size: 16px; /* Prevents iOS zoom */
 }
-
-/* Date/time input dark theme styling */
-input[type="date"],
-input[type="time"] {
-  color-scheme: dark;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-input[type="date"]::-webkit-calendar-picker-indicator,
-input[type="time"]::-webkit-calendar-picker-indicator {
-  filter: invert(0.6);
-  opacity: 0.8;
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
-}
-
-input[type="date"]::-webkit-calendar-picker-indicator:hover,
-input[type="time"]::-webkit-calendar-picker-indicator:hover {
-  filter: invert(0.8);
-  background: rgba(255, 107, 53, 0.1);
-}
-
-/* Premium link transitions */
-a {
-  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-/* Card hover lift effect */
-.card-lift {
-  transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.2s ease;
-}
-
-.card-lift:active {
-  transform: scale(0.98);
-}
-
-/* Smooth content loading */
-.content-enter {
-  animation: pageEnter 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-}
-
-/* Staggered children animation */
-.stagger-children > * {
-  opacity: 0;
-  animation: pageEnter 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-}
-
-.stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
-.stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
-.stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
-.stagger-children > *:nth-child(4) { animation-delay: 0.2s; }
-.stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
-.stagger-children > *:nth-child(6) { animation-delay: 0.3s; }

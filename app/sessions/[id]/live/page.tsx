@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Avatar } from '@/components/ui/avatar'
@@ -126,15 +126,25 @@ export default function LiveScoringPage() {
     setScores([])
   }
 
+  // Ref to track latest game state synchronously for rapid tapping
+  const gameRef = useRef<any>(null)
+
+  useEffect(() => {
+    gameRef.current = currentGame
+  }, [currentGame])
+
   const handleScore = useCallback(async (memberId: string, points: 1 | 2 | 3, teamId: string) => {
-    if (!currentGame) return
+    // Use ref to get the absolute latest state (handling rapid taps)
+    const latestGame = gameRef.current
+    if (!latestGame) return
+
     if (navigator.vibrate) navigator.vibrate(50)
 
     // Trigger score animation
     setScoreAnimation(teamId)
     setTimeout(() => setScoreAnimation(null), 300)
 
-    let gameId = currentGame.id
+    let gameId = latestGame.id
 
     // If game doesn't exist in DB yet (first score), create it now
     if (!gameId) {
@@ -142,8 +152,8 @@ export default function LiveScoringPage() {
         .from('games')
         .insert({
           session_id: sessionId,
-          team1_id: currentGame.team1_id,
-          team2_id: currentGame.team2_id,
+          team1_id: latestGame.team1_id,
+          team2_id: latestGame.team2_id,
           team1_score: 0,
           team2_score: 0,
           status: 'in_progress',
@@ -153,7 +163,10 @@ export default function LiveScoringPage() {
 
       if (!insertedGame) return
       gameId = insertedGame.id
-      setCurrentGame((prev: any) => ({ ...prev, id: gameId }))
+      // Update ref and state with new ID
+      const newGameState = { ...latestGame, id: gameId }
+      gameRef.current = newGameState
+      setCurrentGame(newGameState)
     }
 
     const { data: newScore } = await supabase
@@ -164,21 +177,27 @@ export default function LiveScoringPage() {
 
     if (!newScore) return
 
-    const isTeam1 = teamId === currentGame.team1_id
-    const newTeam1Score = isTeam1 ? currentGame.team1_score + points : currentGame.team1_score
-    const newTeam2Score = !isTeam1 ? currentGame.team2_score + points : currentGame.team2_score
+    // Calculate new scores using the REF's data (which is always current)
+    const currentRef = gameRef.current
+    const isTeam1 = teamId === currentRef.team1_id
+    const newTeam1Score = isTeam1 ? currentRef.team1_score + points : currentRef.team1_score
+    const newTeam2Score = !isTeam1 ? currentRef.team2_score + points : currentRef.team2_score
 
-    await supabase.from('games').update({ team1_score: newTeam1Score, team2_score: newTeam2Score } as any).eq('id', gameId)
-
-    setCurrentGame((prev: any) => ({ ...prev, team1_score: newTeam1Score, team2_score: newTeam2Score }))
+    // Optimistically update Ref and State immediately
+    const updatedGame = { ...currentRef, team1_score: newTeam1Score, team2_score: newTeam2Score }
+    gameRef.current = updatedGame
+    setCurrentGame(updatedGame)
     setScores(prev => [...prev, newScore])
 
+    // Update DB in background
+    await supabase.from('games').update({ team1_score: newTeam1Score, team2_score: newTeam2Score } as any).eq('id', gameId)
+
     if (newTeam1Score >= TARGET_SCORE || newTeam2Score >= TARGET_SCORE) {
-      const winnerTeamId = newTeam1Score >= TARGET_SCORE ? currentGame.team1_id : currentGame.team2_id
+      const winnerTeamId = newTeam1Score >= TARGET_SCORE ? currentRef.team1_id : currentRef.team2_id
       setWinner(teams.find(t => t.id === winnerTeamId))
       setShowGameEndModal(true)
     }
-  }, [currentGame, teams, sessionId])
+  }, [teams, sessionId])
 
   const handleUndo = useCallback(async () => {
     if (!currentGame || scores.length === 0) return

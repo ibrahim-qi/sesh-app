@@ -138,6 +138,9 @@ export default function LiveScoringPage() {
     const latestGame = gameRef.current
     if (!latestGame) return
 
+    // Prevent over-scoring if game is already won
+    if (latestGame.team1_score >= TARGET_SCORE || latestGame.team2_score >= TARGET_SCORE) return
+
     if (navigator.vibrate) navigator.vibrate(50)
 
     // Trigger score animation

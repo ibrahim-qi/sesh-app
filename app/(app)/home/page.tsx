@@ -94,6 +94,32 @@ export default function HomePage() {
     }
 
     // Get stats
+    // 1. Get all teams user has been part of
+    const { data: userTeamsData } = await supabase
+      .from('session_team_players')
+      .select('session_team_id')
+      .eq('group_member_id', memberData.id)
+
+    const userTeamIds = (userTeamsData || []).map((ut: any) => ut.session_team_id)
+
+    // 2. Get all games involving those teams
+    let totalGames = 0
+    let totalWins = 0
+
+    if (userTeamIds.length > 0) {
+      const { data: userGames } = await supabase
+        .from('games')
+        .select('*')
+        .or(`team1_id.in.(${userTeamIds.join(',')}),team2_id.in.(${userTeamIds.join(',')})`)
+        .eq('status', 'completed') // Only count completed games
+
+      totalGames = userGames?.length || 0
+
+      // 3. Calculate wins
+      totalWins = (userGames || []).filter((g: any) => userTeamIds.includes(g.winner_team_id)).length
+    }
+
+    // 4. Get total points (existing logic)
     const { data: scoresData } = await supabase
       .from('game_scores')
       .select('points')
@@ -102,8 +128,8 @@ export default function HomePage() {
     const totalPoints = (scoresData as any[] || []).reduce((sum, s) => sum + s.points, 0)
 
     setStats({
-      games: 0,
-      wins: 0,
+      games: totalGames,
+      wins: totalWins,
       points: totalPoints,
     })
   }

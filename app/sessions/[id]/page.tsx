@@ -6,7 +6,7 @@ import { Card, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar } from '@/components/ui/avatar'
 import { TeamCard } from '@/components/team/team-card'
-import { ArrowLeft, Play, Trash2, Edit2 } from 'lucide-react'
+import { ArrowLeft, Play, Trash2, Edit2, Crown, Flame, Crosshair } from 'lucide-react'
 import Link from 'next/link'
 import { formatDate, formatTime } from '@/lib/utils'
 import { supabase } from '@/lib/supabase/client'
@@ -150,10 +150,19 @@ export default function SessionDetailPage() {
     // Only crown a sniper if they hit at least one
     const sniperPlayer = maxSnipes > 0 ? teamsList.flatMap(t => t.players).find((p: any) => p.group_member_id === sniperId) : null
 
+    // 4. Standings (All teams sorted by wins)
+    const standings = teamsList
+      .map(t => ({
+        ...t,
+        wins: winCounts[t.id] || 0
+      }))
+      .sort((a, b) => b.wins - a.wins)
+
     setStats({
       king: { team: kingTeam, wins: maxWins },
       mvp: { player: mvpPlayer, points: maxPoints },
-      sniper: { player: sniperPlayer, count: maxSnipes }
+      sniper: { player: sniperPlayer, count: maxSnipes },
+      standings
     })
   }
 
@@ -161,17 +170,20 @@ export default function SessionDetailPage() {
     if (!session || !stats) return
 
     const lines = [
-      `🏀 Sesh Recap - ${formatDate(session.date)}`,
+      `*Sesh Recap // ${formatDate(session.date)}*`,
       ``,
-      `👑 Kings: ${stats.king.team?.name || '-'} (${stats.king.wins} wins)`,
+      `👑 Kings: ${stats.king.team?.name || '-'} (${stats.king.wins}W)`,
       `🔥 MVP: ${stats.mvp.player?.member?.name} (${stats.mvp.points}pts)`,
       stats.sniper.player ? `🎯 Sniper: ${stats.sniper.player?.member?.name} (${stats.sniper.count} 3s)` : null,
       ``,
-      `Games:`,
+      `_Standings_`,
+      ...stats.standings.map((t: any, i: number) => `${i + 1}. ${t.name} - ${t.wins}W`),
+      ``,
+      `_Games_`,
       ...games.map((g, i) => {
         const t1 = teams.find(t => t.id === g.team1_id)?.name
         const t2 = teams.find(t => t.id === g.team2_id)?.name
-        return `${i + 1}. ${t1} ${g.team1_score}-${g.team2_score} ${t2}`
+        return `${t1} ${g.team1_score}-${g.team2_score} ${t2}`
       })
     ].filter(Boolean)
 
@@ -276,25 +288,73 @@ export default function SessionDetailPage() {
             </div>
 
             <div className="grid grid-cols-3 gap-2 mb-2">
-              <div className="text-center p-3 rounded-xl bg-[#252c3d]/50 border border-[#ffffff]/5">
-                <div className="text-2xl mb-1">👑</div>
+              <div className="text-center p-3 rounded-xl bg-[#252c3d]/30 backdrop-blur-sm border border-[#ffffff]/5 flex flex-col items-center justify-center">
+                <div className="flex justify-center mb-1">
+                  <Crown size={20} className="text-yellow-400" />
+                </div>
                 <div className="text-xs text-[#a1a7b4] uppercase tracking-wider font-bold mb-1">Kings</div>
-                <div className="font-bold text-white text-sm truncate">{stats.king.team?.name || '-'}</div>
+                <div className="font-bold text-white text-sm truncate w-full">{stats.king.team?.name || '-'}</div>
                 <div className="text-xs text-[#6b7280]">{stats.king.wins} wins</div>
               </div>
 
-              <div className="text-center p-3 rounded-xl bg-[#252c3d]/50 border border-[#ffffff]/5">
-                <div className="text-2xl mb-1">🔥</div>
+              <div className="text-center p-3 rounded-xl bg-[#252c3d]/30 backdrop-blur-sm border border-[#ffffff]/5 flex flex-col items-center justify-center">
+                <div className="mb-2 relative">
+                  <div className="absolute -top-1 -right-1 z-10">
+                    <Flame size={14} className="text-orange-400 fill-orange-400/20" />
+                  </div>
+                  <Avatar
+                    src={stats.mvp.player?.member?.avatar_url}
+                    name={stats.mvp.player?.member?.name}
+                    size="sm"
+                    className="border-2 border-orange-500/20"
+                  />
+                </div>
                 <div className="text-xs text-[#a1a7b4] uppercase tracking-wider font-bold mb-1">MVP</div>
-                <div className="font-bold text-white text-sm truncate">{stats.mvp.player?.member?.name?.split(' ')[0] || '-'}</div>
+                <div className="font-bold text-white text-sm truncate w-full">{stats.mvp.player?.member?.name?.split(' ')[0] || '-'}</div>
                 <div className="text-xs text-[#6b7280]">{stats.mvp.points} pts</div>
               </div>
 
-              <div className="text-center p-3 rounded-xl bg-[#252c3d]/50 border border-[#ffffff]/5">
-                <div className="text-2xl mb-1">🎯</div>
+              <div className="text-center p-3 rounded-xl bg-[#252c3d]/30 backdrop-blur-sm border border-[#ffffff]/5 flex flex-col items-center justify-center">
+                <div className="mb-2 relative">
+                  <div className="absolute -top-1 -right-1 z-10">
+                    <Crosshair size={14} className="text-red-400 fill-red-400/20" />
+                  </div>
+                  <Avatar
+                    src={stats.sniper.player?.member?.avatar_url}
+                    name={stats.sniper.player?.member?.name}
+                    size="sm"
+                    className="border-2 border-red-500/20"
+                  />
+                </div>
                 <div className="text-xs text-[#a1a7b4] uppercase tracking-wider font-bold mb-1">Sniper</div>
-                <div className="font-bold text-white text-sm truncate">{stats.sniper.player?.member?.name?.split(' ')[0] || '-'}</div>
+                <div className="font-bold text-white text-sm truncate w-full">{stats.sniper.player?.member?.name?.split(' ')[0] || '-'}</div>
                 <div className="text-xs text-[#6b7280]">{stats.sniper.count > 0 ? `${stats.sniper.count} 3s` : '-'}</div>
+              </div>
+            </div>
+
+            <div className="mt-4 pt-4 border-t border-[#ffffff]/5">
+              <div className="text-xs text-[#6b7280] uppercase tracking-wider font-bold mb-2 pl-1">Standings</div>
+              <div className="space-y-1">
+                {stats.standings.map((team: any, i: number) => {
+                  let rankColor = 'text-[#6b7280]'
+                  if (i === 0) rankColor = 'text-yellow-400'
+                  if (i === 1) rankColor = 'text-gray-300'
+                  if (i === 2) rankColor = 'text-amber-600'
+
+                  return (
+                    <div key={team.id} className="flex items-center justify-between p-2 rounded-lg bg-[#252c3d]/30">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-6 text-center font-mono text-sm font-bold ${rankColor}`}>
+                          {i + 1}
+                        </div>
+                        <span className={`text-sm ${i === 0 ? 'text-white font-medium' : 'text-[#a1a7b4]'}`}>
+                          {team.name}
+                        </span>
+                      </div>
+                      <span className="text-sm font-mono text-[#6b7280]">{team.wins}W</span>
+                    </div>
+                  )
+                })}
               </div>
             </div>
           </Card>
